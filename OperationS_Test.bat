@@ -1,0 +1,1 @@
+"C:\Program Files\Epic Games\UE_5.3\Engine\Binaries\Win64\UnrealEditor.exe" "C:\Users\marco\OneDrive\Documents\Unreal Projects\OperationS\OperationS.uproject" -game -ResX=960 -ResY=540 -log -WINDOWED
