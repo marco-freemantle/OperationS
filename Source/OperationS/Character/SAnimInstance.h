@@ -28,5 +28,8 @@ public:
 	bool bIsInAir;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool bHasJumped;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool bIsAccelerating;
 };

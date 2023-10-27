@@ -28,5 +28,12 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	bIsInAir = SCharacter->GetCharacterMovement()->IsFalling();
 
+	bHasJumped = SCharacter->bHasJumped;
+
+	if (!bIsInAir)
+	{
+		SCharacter->bHasJumped = false;
+	}
+
 	bIsAccelerating = SCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
 }
