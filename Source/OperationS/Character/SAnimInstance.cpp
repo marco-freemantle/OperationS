@@ -4,6 +4,7 @@
 #include "SAnimInstance.h"
 #include "SCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void USAnimInstance::NativeInitializeAnimation()
 {
@@ -36,4 +37,22 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	}
 
 	bIsAccelerating = SCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+	bWeaponEquipped = SCharacter->IsWeaponEquipped();
+	bIsCrouched = SCharacter->bIsCrouched;
+	bIsAiming = SCharacter->IsAiming();
+
+	//Offset yaw for strafing
+	FRotator AimRotation = SCharacter->GetBaseAimRotation();
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(SCharacter->GetVelocity());
+	FRotator DelatRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+	DeltaRotation = FMath::RInterpTo(DeltaRotation, DelatRot, DeltaTime, 5.f);
+	YawOffset = DeltaRotation.Yaw;
+
+	CharacterRotationLastFrame = CharacterRotation;
+	CharacterRotation = SCharacter->GetActorRotation();
+
+	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
+	const float Target = Delta.Yaw / DeltaTime;
+	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
+	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 }

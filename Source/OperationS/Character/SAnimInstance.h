@@ -32,4 +32,23 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool bIsAccelerating;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool bWeaponEquipped;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool bIsCrouched;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool bIsAiming;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	float YawOffset;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	float Lean;
+
+	FRotator CharacterRotationLastFrame;
+	FRotator CharacterRotation;
+	FRotator DeltaRotation;
 };
