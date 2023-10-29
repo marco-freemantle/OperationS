@@ -51,4 +51,10 @@ public:
 	FRotator CharacterRotationLastFrame;
 	FRotator CharacterRotation;
 	FRotator DeltaRotation;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	float AO_Yaw;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	float AO_Pitch;
 };
