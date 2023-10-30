@@ -5,6 +5,7 @@
 #include "SCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "OperationS/Weapon/Weapon.h"
 
 void USAnimInstance::NativeInitializeAnimation()
 {
@@ -38,8 +39,10 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	bIsAccelerating = SCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
 	bWeaponEquipped = SCharacter->IsWeaponEquipped();
+	EquippedWeapon = SCharacter->GetEquippedWeapon();
 	bIsCrouched = SCharacter->bIsCrouched;
 	bIsAiming = SCharacter->IsAiming();
+	TurningInPlace = SCharacter->GetTurningInPlace();
 
 	//Offset yaw for strafing
 	FRotator AimRotation = SCharacter->GetBaseAimRotation();
@@ -58,4 +61,14 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	AO_Yaw = SCharacter->GetAO_Yaw();
 	AO_Pitch = SCharacter->GetAO_Pitch();
+
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && SCharacter->GetMesh())
+	{
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("LeftHandSocket"), ERelativeTransformSpace::RTS_World);
+		FVector OutPosition;
+		FRotator OutRotation;
+		SCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+	}
 }

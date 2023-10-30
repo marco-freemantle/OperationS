@@ -1,2 +1,3 @@
 TODO:
-- Yaw offset not replicated properly
+- Turn left and right in place animations not set up
+- Cannot crouch walk off objects

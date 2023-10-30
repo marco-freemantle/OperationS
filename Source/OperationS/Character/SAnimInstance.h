@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "OperationS/STypes/TurningInPlace.h"
 #include "SAnimInstance.generated.h"
 
 /**
@@ -36,6 +37,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool bWeaponEquipped;
 
+	class AWeapon* EquippedWeapon;
+
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool bIsCrouched;
 
@@ -57,4 +60,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	float AO_Pitch;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	FTransform LeftHandTransform;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	ETurningInPlace TurningInPlace;
 };
