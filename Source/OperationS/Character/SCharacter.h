@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "OperationS/STypes/TurningInPlace.h"
+#include "OperationS/Interfaces/InteractWithCrosshairsInterface.h"
 #include "SCharacter.generated.h"
 
 UCLASS()
-class OPERATIONS_API ASCharacter : public ACharacter
+class OPERATIONS_API ASCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
@@ -42,6 +43,8 @@ protected:
 	void AimButtonReleased();
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void SprintButtonPressed();
+	void SprintButtonReleased();
 
 	virtual void Jump() override;
 
@@ -69,6 +72,12 @@ private:
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
 
+	UFUNCTION(Server, Reliable)
+	void ServerSprintButtonPressed();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSprintButtonReleased();
+
 	float AO_Yaw;
 	float InterpAO_Yaw;
 	float AO_Pitch;
@@ -80,6 +89,15 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(Replicated)
+	bool bIsSprinting;
+
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 100.f;
+
 public:	
 
 	//Replicated for animation blueprint
@@ -94,6 +112,10 @@ public:
 
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
+	FORCEINLINE bool GetIsSprinting() const { return bIsSprinting; }
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	AWeapon* GetEquippedWeapon();
+
+	FVector GetHitTarget() const;
 };

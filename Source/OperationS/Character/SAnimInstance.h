@@ -35,6 +35,9 @@ public:
 	bool bIsAccelerating;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool bIsSprinting;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool bWeaponEquipped;
 
 	class AWeapon* EquippedWeapon;
@@ -66,4 +69,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	ETurningInPlace TurningInPlace;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	FRotator RightHandRotation;
 };

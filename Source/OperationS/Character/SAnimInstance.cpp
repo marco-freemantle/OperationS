@@ -43,6 +43,7 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsCrouched = SCharacter->bIsCrouched;
 	bIsAiming = SCharacter->IsAiming();
 	TurningInPlace = SCharacter->GetTurningInPlace();
+	bIsSprinting = SCharacter->GetIsSprinting();
 
 	//Offset yaw for strafing
 	FRotator AimRotation = SCharacter->GetBaseAimRotation();
@@ -70,5 +71,12 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		SCharacter->GetMesh()->TransformToBoneSpace(FName("hand_r"), LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
 		LeftHandTransform.SetLocation(OutPosition);
 		LeftHandTransform.SetRotation(FQuat(OutRotation));
+
+		FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("Hand_R"), ERelativeTransformSpace::RTS_World);
+		RightHandRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - SCharacter->GetHitTarget()));
+
+		FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"), ERelativeTransformSpace::RTS_World);
+		FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+
 	}
 }

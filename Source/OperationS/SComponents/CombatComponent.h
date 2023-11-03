@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "OperationS/HUD/SHUD.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f
@@ -25,6 +26,10 @@ public:
 	void EquipWeapon(class AWeapon* WeaponToEquip);
 
 	class ASCharacter* Character;
+
+	class ASPlayerController* Controller;
+
+	class ASHUD* HUD;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
@@ -36,6 +41,31 @@ public:
 	void OnRep_EquippedWeapon();
 
 	void FireButtonPressed(bool bPressed);
+
+	//HUD and Crosshairs
+
+	float CrosshairVelocityFactor;
+	float CrosshairInAirFactor;
+	float CrosshairSprintingFactor;
+	float CrosshairAimFactor;
+	float CrosshairShootingFactor;
+
+	FVector HitTarget;
+
+	FHUDPackage HUDPackage;
+
+	//Aiming and FOV
+	float DefaultFOV;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomedFOV = 3.f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float ZoomInterpSpeed = 20.f;
+
+	void InterpFOV(float DeltaTime);
+
+	float CurrentFOV;
 
 protected:
 	virtual void BeginPlay() override;
@@ -61,4 +91,5 @@ protected:
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 	
+	void SetHUDCrosshairs(float DeltaTime);
 };

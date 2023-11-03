@@ -1,3 +1,4 @@
 TODO:
+- DefaultPlatformService=Steam when ready
 - Turn left and right in place animations not set up
 - Shell eject rotation should be slightly randomised

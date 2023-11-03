@@ -35,7 +35,12 @@ ASCharacter::ASCharacter()
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
 
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
+	bIsSprinting = false;
 
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
@@ -49,6 +54,7 @@ void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	DOREPLIFETIME_CONDITION(ASCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ASCharacter, bHasJumped, COND_SimulatedOnly);
+	DOREPLIFETIME(ASCharacter, bIsSprinting);
 }
 
 void ASCharacter::BeginPlay()
@@ -62,6 +68,7 @@ void ASCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
 }
 
 void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -75,6 +82,8 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ASCharacter::AimButtonReleased);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASCharacter::FireButtonReleased);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintButtonPressed);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintButtonReleased);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
@@ -107,6 +116,10 @@ void ASCharacter::PlayFireMontage(bool bAiming)
 
 void ASCharacter::MoveForward(float Value)
 {
+	if (Value < 0 && bIsSprinting && Combat->EquippedWeapon)
+	{
+		SprintButtonReleased();
+	}
 	if (Controller != nullptr && Value != 0.f)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -117,6 +130,10 @@ void ASCharacter::MoveForward(float Value)
 
 void ASCharacter::MoveRight(float Value)
 {
+	if ((Value == 1.f || Value == -1.f) && bIsSprinting && Combat->EquippedWeapon)
+	{
+		SprintButtonReleased();
+	}
 	if (Controller != nullptr && Value != 0.f)
 	{
 		const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
@@ -167,7 +184,7 @@ void ASCharacter::CrouchButtonPressed()
 
 void ASCharacter::AimButtonPressed()
 {
-	if (Combat)
+	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->SetAiming(true);
 	}
@@ -175,7 +192,7 @@ void ASCharacter::AimButtonPressed()
 
 void ASCharacter::AimButtonReleased()
 {
-	if (Combat)
+	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->SetAiming(false);
 	}
@@ -186,6 +203,7 @@ void ASCharacter::FireButtonPressed()
 	if (Combat)
 	{
 		Combat->FireButtonPressed(true);
+		SprintButtonReleased();
 	}
 }
 
@@ -196,6 +214,61 @@ void ASCharacter::FireButtonReleased()
 		Combat->FireButtonPressed(false);
 	}
 
+}
+
+void ASCharacter::SprintButtonPressed()
+{
+	//Check the character's movement direction
+	FVector ForwardVector = GetActorForwardVector();
+	FVector CharacterVelocity = GetCharacterMovement()->Velocity;
+	bool bIsMovingForward = FVector::DotProduct(ForwardVector, CharacterVelocity) > 0;
+
+	if (!bIsMovingForward || IsAiming()) return;
+
+	if (HasAuthority())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 800.f;
+		bIsSprinting = true;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 800;
+		ServerSprintButtonPressed();
+	}
+}
+
+void ASCharacter::SprintButtonReleased()
+{
+	if (!bIsSprinting) return;
+
+	bIsSprinting = false;
+	if (HasAuthority())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+		ServerSprintButtonReleased();
+	}
+}
+
+void ASCharacter::ServerSprintButtonPressed_Implementation()
+{
+	if (HasAuthority())
+	{
+		bIsSprinting = true;
+		GetCharacterMovement()->MaxWalkSpeed = 800.f;
+	}
+}
+
+void ASCharacter::ServerSprintButtonReleased_Implementation()
+{
+	if (HasAuthority())
+	{
+		bIsSprinting = false;
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	}
 }
 
 void ASCharacter::Jump()
@@ -270,6 +343,37 @@ void ASCharacter::TurnInPlace(float DeltaTime)
 	}
 }
 
+void ASCharacter::HideCameraIfCharacterClose()
+{
+	if (!IsLocallyControlled() || !FollowCamera) return;
+
+	FVector CameraToCharacter = FollowCamera->GetComponentLocation() - GetActorLocation();
+	if (CameraToCharacter.Size() < CameraThreshold)
+	{
+		if (GetMesh())
+		{
+			GetMesh()->SetVisibility(false);
+		}
+
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->SetOwnerNoSee(true);
+		}
+	}
+	else
+	{
+		if (GetMesh())
+		{
+			GetMesh()->SetVisibility(true);
+		}
+
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
+		{
+			Combat->EquippedWeapon->GetWeaponMesh()->SetOwnerNoSee(false);
+		}
+	}
+}
+
 //Only executed on client since replication only works server->client
 void ASCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 {
@@ -322,6 +426,12 @@ AWeapon* ASCharacter::GetEquippedWeapon()
 {
 	if (Combat == nullptr) return nullptr;
 	return Combat->EquippedWeapon;
+}
+
+FVector ASCharacter::GetHitTarget() const
+{
+	if (Combat == nullptr) return FVector();
+	return Combat->HitTarget;
 }
 
 
