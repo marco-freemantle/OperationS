@@ -42,6 +42,8 @@ public:
 
 	void FireButtonPressed(bool bPressed);
 
+	void Fire();
+
 	//HUD and Crosshairs
 
 	float CrosshairVelocityFactor;
@@ -66,6 +68,14 @@ public:
 	void InterpFOV(float DeltaTime);
 
 	float CurrentFOV;
+
+	//Automatic fire
+	FTimerHandle FireTimer;
+
+	bool bCanFire = true;
+
+	void StartFireTimer();
+	void FireTimerFinished();
 
 protected:
 	virtual void BeginPlay() override;

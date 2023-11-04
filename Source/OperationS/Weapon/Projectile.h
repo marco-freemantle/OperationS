@@ -40,6 +40,14 @@ private:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
 
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* FleshImpactParticles;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* FleshImpactSound;
+
+	bool bHitFlesh = false;
+
 public:	
 	
 

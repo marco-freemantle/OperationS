@@ -11,6 +11,7 @@
 #include "OperationS/SComponents/CombatComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SAnimInstance.h"
+#include "OperationS/OperationS.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -35,6 +36,7 @@ ASCharacter::ASCharacter()
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
 
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
@@ -112,6 +114,24 @@ void ASCharacter::PlayFireMontage(bool bAiming)
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void ASCharacter::PlayHitReactMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+		FName SectionName("FromFront");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ASCharacter::MulticastHit_Implementation()
+{
+	PlayHitReactMontage();
 }
 
 void ASCharacter::MoveForward(float Value)
