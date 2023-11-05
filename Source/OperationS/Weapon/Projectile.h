@@ -14,13 +14,24 @@ class OPERATIONS_API AProjectile : public AActor
 public:	
 	AProjectile();
 	virtual void Tick(float DeltaTime) override;
-	virtual void Destroyed() override;
 
 protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
+	bool bHitFlesh;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPlayHitEffects(bool bFleshHit);
+
+	void DelayedDestroy();
+
+	class UParticleSystemComponent* TracerComponent;
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -31,8 +42,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* Tracer;
-
-	class UParticleSystemComponent* TracerComponent;
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactParticles;
@@ -45,8 +54,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* FleshImpactSound;
-
-	bool bHitFlesh = false;
 
 public:	
 	

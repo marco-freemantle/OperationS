@@ -19,5 +19,6 @@ private:
 	TSubclassOf<class AProjectile> ProjectileClass;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	virtual void Fire(const FVector& HitTarget) override;
 };

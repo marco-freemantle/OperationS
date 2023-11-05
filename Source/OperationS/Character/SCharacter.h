@@ -31,12 +31,11 @@ public:
 
 	void PlayHitReactMontage();
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastHit();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void UpdateHUDHealth();
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -50,6 +49,9 @@ protected:
 	void FireButtonReleased();
 	void SprintButtonPressed();
 	void SprintButtonReleased();
+
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
 	virtual void Jump() override;
 
@@ -105,6 +107,18 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 100.f;
+
+	//Player health
+	UPROPERTY(EditAnywhere, Category = "Player stats")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Health, Category = "Player stats", VisibleAnywhere)
+	float Health = 100.f;
+
+	UFUNCTION()
+	void OnRep_Health();
+
+	class ASPlayerController* SPlayerController;
 
 public:	
 

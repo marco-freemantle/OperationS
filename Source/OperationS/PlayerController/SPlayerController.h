@@ -13,5 +13,13 @@ UCLASS()
 class OPERATIONS_API ASPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
+public:
+	void SetHUDHealth(float Health, float MaxHealth);
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	class ASHUD* SHUD;
 };

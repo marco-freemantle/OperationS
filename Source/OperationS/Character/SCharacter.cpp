@@ -12,6 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "SAnimInstance.h"
 #include "OperationS/OperationS.h"
+#include "Operations/PlayerController/SPlayerController.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -57,12 +58,18 @@ void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_CONDITION(ASCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ASCharacter, bHasJumped, COND_SimulatedOnly);
 	DOREPLIFETIME(ASCharacter, bIsSprinting);
+	DOREPLIFETIME(ASCharacter, Health);
 }
 
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	UpdateHUDHealth();
+	if (HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this, &ASCharacter::ReceiveDamage);
+	}
 }
 
 void ASCharacter::Tick(float DeltaTime)
@@ -127,11 +134,6 @@ void ASCharacter::PlayHitReactMontage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
-}
-
-void ASCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
 }
 
 void ASCharacter::MoveForward(float Value)
@@ -273,6 +275,13 @@ void ASCharacter::SprintButtonReleased()
 	}
 }
 
+void ASCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	PlayHitReactMontage();
+	UpdateHUDHealth();
+}
+
 void ASCharacter::ServerSprintButtonPressed_Implementation()
 {
 	if (HasAuthority())
@@ -412,6 +421,21 @@ void ASCharacter::ServerEquipButtonPressed_Implementation()
 	if (Combat && HasAuthority())
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+
+void ASCharacter::OnRep_Health()
+{
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
+
+void ASCharacter::UpdateHUDHealth()
+{
+	SPlayerController = SPlayerController == nullptr ? Cast<ASPlayerController>(Controller) : SPlayerController;
+	if (SPlayerController)
+	{
+		SPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
 }
 

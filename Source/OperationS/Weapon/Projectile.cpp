@@ -10,6 +10,7 @@
 #include "Sound/SoundCue.h"
 #include "Operations/Character/SCharacter.h"
 #include "Operations/OperationS.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -55,23 +56,26 @@ void AProjectile::BeginPlay()
 //Only called on the server
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ASCharacter* SCharacter = Cast<ASCharacter>(OtherActor);
-	if (SCharacter)
+	ASCharacter* PlayerHit = Cast<ASCharacter>(OtherActor);
+
+	if (PlayerHit)
 	{
 		bHitFlesh = true;
-		SCharacter->MulticastHit();
+	}
+	else
+	{
+		bHitFlesh = false;
 	}
 
-	//Called on all clients
-	Destroy();
+	MulticastPlayHitEffects(bHitFlesh);
+
+	FTimerHandle DestroyTimerHandle;
+	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::DelayedDestroy, 0.05f, false);
 }
 
-//Since called on all clients, we can play sound and particles here
-void AProjectile::Destroyed()
+void AProjectile::MulticastPlayHitEffects_Implementation(bool bFleshHit)
 {
-	Super::Destroyed();
-
-	if (bHitFlesh)
+	if (bFleshHit)
 	{
 		if (FleshImpactParticles)
 		{
@@ -93,6 +97,11 @@ void AProjectile::Destroyed()
 			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 		}
 	}
+}
+
+void AProjectile::DelayedDestroy()
+{
+	Destroy();
 }
 
 void AProjectile::Tick(float DeltaTime)
