@@ -44,6 +44,7 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	bIsAiming = SCharacter->IsAiming();
 	TurningInPlace = SCharacter->GetTurningInPlace();
 	bIsSprinting = SCharacter->GetIsSprinting();
+	bElimmed = SCharacter->IsElimmed();
 
 	//Offset yaw for strafing
 	FRotator AimRotation = SCharacter->GetBaseAimRotation();

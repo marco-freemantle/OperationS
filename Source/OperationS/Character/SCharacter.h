@@ -31,6 +31,13 @@ public:
 
 	void PlayHitReactMontage();
 
+	void PlayElimMontage();
+
+	void Elim();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -100,6 +107,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ElimMontage;
+
 	UPROPERTY(Replicated)
 	bool bIsSprinting;
 
@@ -120,6 +130,15 @@ private:
 
 	class ASPlayerController* SPlayerController;
 
+	bool bElimmed = false;
+
+	FTimerHandle ElimTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 5.f;
+
+	void ElimTimerFinished();
+
 public:	
 
 	//Replicated for animation blueprint
@@ -137,6 +156,9 @@ public:
 	FORCEINLINE bool GetIsSprinting() const { return bIsSprinting; }
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	AWeapon* GetEquippedWeapon();
 
 	FVector GetHitTarget() const;

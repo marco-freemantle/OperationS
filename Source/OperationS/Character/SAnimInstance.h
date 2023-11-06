@@ -72,4 +72,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	FRotator RightHandRotation;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool bElimmed;
 };

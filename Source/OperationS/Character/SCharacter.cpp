@@ -13,6 +13,9 @@
 #include "SAnimInstance.h"
 #include "OperationS/OperationS.h"
 #include "Operations/PlayerController/SPlayerController.h"
+#include "Operations/GameMode/SGameMode.h"
+#include "Components/CapsuleComponent.h"
+#include "TimerManager.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -37,9 +40,12 @@ ASCharacter::ASCharacter()
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
 
+
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
@@ -133,6 +139,54 @@ void ASCharacter::PlayHitReactMontage()
 		AnimInstance->Montage_Play(HitReactMontage);
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void ASCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+	}
+}
+
+void ASCharacter::Elim()
+{
+	MulticastElim();
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
+	GetWorldTimerManager().SetTimer(ElimTimer, this, &ASCharacter::ElimTimerFinished, ElimDelay);
+}
+
+void ASCharacter::MulticastElim_Implementation()
+{
+	bElimmed = true;
+
+	//Disable any character movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (SPlayerController)
+	{
+		DisableInput(SPlayerController);
+	}
+
+	//Turn off collision for the capsule
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//Enable physics simulation on the skeletal mesh to turn into a ragdoll
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+}
+
+void ASCharacter::ElimTimerFinished()
+{
+	ASGameMode* SGameMode = GetWorld()->GetAuthGameMode<ASGameMode>();
+
+	if (SGameMode)
+	{
+		SGameMode->RequestRespawn(this, Controller);
 	}
 }
 
@@ -280,6 +334,17 @@ void ASCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	PlayHitReactMontage();
 	UpdateHUDHealth();
+
+	if (Health == 0.f)
+	{
+		ASGameMode* SGameMode = GetWorld()->GetAuthGameMode<ASGameMode>();
+		if (SGameMode)
+		{
+			SPlayerController = SPlayerController == nullptr ? Cast<ASPlayerController>(Controller) : SPlayerController;
+			ASPlayerController* AttackerController = Cast<ASPlayerController>(InstigatorController);
+			SGameMode->PlayerEliminated(this, SPlayerController, AttackerController);
+		}
+	}
 }
 
 void ASCharacter::ServerSprintButtonPressed_Implementation()

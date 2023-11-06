@@ -6,12 +6,25 @@
 #include "Operations/HUD/CharacterOverlay.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Operations/Character/SCharacter.h"
 
 void ASPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SHUD = Cast<ASHUD>(GetHUD());
+}
+
+void ASPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	ASCharacter* SCharacter = Cast<ASCharacter>(InPawn);
+
+	if (SCharacter)
+	{
+		SetHUDHealth(SCharacter->GetHealth(), SCharacter->GetMaxHealth());
+	}
 }
 
 void ASPlayerController::SetHUDHealth(float Health, float MaxHealth)

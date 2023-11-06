@@ -35,6 +35,7 @@ public:
 	class USphereComponent* AreaSphere;
 
 	virtual void Fire(const FVector& HitTarget);
+	void Dropped();
 
 	//Textures for weapon crosshairs
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
