@@ -64,9 +64,14 @@ protected:
 
 	void AimOffset(float DeltaTime);
 
+	//Poll for any relevant classes and initialise HUD
+	void PollInit();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
+
+	FVector TargetCameraOffset = FVector(0.f, 60.f, 0.f);
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* FollowCamera;
@@ -162,4 +167,6 @@ public:
 	AWeapon* GetEquippedWeapon();
 
 	FVector GetHitTarget() const;
+
+	class ASPlayerState* SPlayerState;
 };

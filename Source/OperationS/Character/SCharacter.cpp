@@ -16,6 +16,7 @@
 #include "Operations/GameMode/SGameMode.h"
 #include "Components/CapsuleComponent.h"
 #include "TimerManager.h"
+#include "OperationS/PlayerState/SPlayerState.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -24,6 +25,7 @@ ASCharacter::ASCharacter()
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
+	
 	CameraBoom->TargetArmLength = 600.f;
 	CameraBoom->bUsePawnControlRotation = true;
 
@@ -82,8 +84,16 @@ void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (CameraBoom)
+	{
+		//Interpolate towards the target offset
+		const float InterpSpeed = 10.f;
+		CameraBoom->SocketOffset = FMath::VInterpTo(CameraBoom->SocketOffset, TargetCameraOffset, DeltaTime, InterpSpeed);
+	}
+
 	AimOffset(DeltaTime);
 	HideCameraIfCharacterClose();
+	PollInit();
 }
 
 void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -178,6 +188,12 @@ void ASCharacter::MulticastElim_Implementation()
 	//Enable physics simulation on the skeletal mesh to turn into a ragdoll
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	//Set the mesh to ignore bullet collision
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+
+	//Stop camera following ragdoll
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	FollowCamera->DetachFromComponent(DetachRules);
 }
 
 void ASCharacter::ElimTimerFinished()
@@ -248,12 +264,16 @@ void ASCharacter::CrouchButtonPressed()
 	if (bIsCrouched)
 	{
 		UnCrouch();
+		//Set target camera height
+		TargetCameraOffset = FVector(0.f, 60.f, 0.f);
 	}
 	else
 	{
 		if (!GetCharacterMovement()->IsFalling())
 		{
 			Crouch();
+			//Set target camera height
+			TargetCameraOffset = FVector(0.f, 60.f, -40.f);
 		}
 	}
 }
@@ -412,6 +432,18 @@ void ASCharacter::AimOffset(float DeltaTime)
 		FVector2D InRange(270.f, 360.f);
 		FVector2D OutRange(-90.f, 0.f);
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
+}
+
+void ASCharacter::PollInit()
+{
+	if (SPlayerState == nullptr)
+	{
+		SPlayerState = GetPlayerState<ASPlayerState>();
+		if (SPlayerState)
+		{
+			SPlayerState->AddToScore(0.f);
+		}
 	}
 }
 

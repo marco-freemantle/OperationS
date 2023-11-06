@@ -39,3 +39,14 @@ void ASPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		SHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 }
+
+void ASPlayerController::SetHUDScore(float Score)
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->ScoreAmount)
+	{
+		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
+		SHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
+	}
+}
