@@ -7,7 +7,7 @@
 
 void ASPlayerState::AddToScore(float ScoreAmount)
 {
-	Score += ScoreAmount;
+	SetScore(GetScore() + ScoreAmount);
 
 	Character = Character == nullptr ? Cast<ASCharacter>(GetPawn()) : Character;
 	if (Character)
@@ -15,7 +15,7 @@ void ASPlayerState::AddToScore(float ScoreAmount)
 		Controller = Controller == nullptr ? Cast<ASPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(Score);
+			Controller->SetHUDScore(GetScore());
 		}
 	}
 }
@@ -30,7 +30,7 @@ void ASPlayerState::OnRep_Score()
 		Controller = Controller == nullptr ? Cast<ASPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(Score);
+			Controller->SetHUDScore(GetScore());
 		}
 	}
 }

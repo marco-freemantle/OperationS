@@ -8,3 +8,4 @@ TODO:
 - Blood effect on hit has incorrect rotation
 - Hit sound should only play on player that was hit and instigating player
 - Possibly remove projectile rifles (use hitscan instead). ONly have projectile explosives
+- Reload walk right snaps left -> reload walk forward snaps back

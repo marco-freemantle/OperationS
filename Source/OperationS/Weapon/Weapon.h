@@ -31,6 +31,10 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void OnRep_Owner() override;
+
+	void SetHUDAmmo();
+
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class USphereComponent* AreaSphere;
 
@@ -53,12 +57,23 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	UTexture2D* CrosshairsBottom;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* EquipSound;
+
 	//Automatic fire
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float FireDelay = .25f;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	bool bAutomatic = true;
+
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+
+	void ResetClip();
 
 protected:
 	virtual void BeginPlay() override;
@@ -107,9 +122,21 @@ private:
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 30.f;
 
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+
+	UPROPERTY()
+	class ASCharacter* SOwnerCharacter;
+
+	UPROPERTY()
+	class ASPlayerController* SOwnerController;
+
 public:	
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+	bool IsEmpty();
 };

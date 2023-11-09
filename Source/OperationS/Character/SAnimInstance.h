@@ -75,4 +75,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement)
 	bool bElimmed;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	bool bUseFABRIK;
 };

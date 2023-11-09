@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "OperationS/HUD/SHUD.h"
+#include "OperationS/STypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f
@@ -77,6 +78,18 @@ public:
 	void StartFireTimer();
 	void FireTimerFinished();
 
+	bool CanFire();
+	void Reload();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+
+	UFUNCTION()
+	void OnRep_CombatState();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -102,4 +115,7 @@ protected:
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 	
 	void SetHUDCrosshairs(float DeltaTime);
+
+	UFUNCTION(Server, Reliable)
+	void ServerReload();
 };

@@ -35,7 +35,7 @@ void ASPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	{
 		const float HealthPercent = Health / MaxHealth;
 		SHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
 		SHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 }
@@ -48,5 +48,16 @@ void ASPlayerController::SetHUDScore(float Score)
 	{
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
 		SHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromString(ScoreText));
+	}
+}
+
+void ASPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity)
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->WeaponAmmoAmount)
+	{
+		FString AmmoText = FString::Printf(TEXT("%d/%d"), Ammo, MagCapacity);
+		SHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
 	}
 }

@@ -103,6 +103,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ASCharacter::EquipButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ASCharacter::CrouchButtonPressed);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ASCharacter::ReloadButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ASCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ASCharacter::AimButtonReleased);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FireButtonPressed);
@@ -161,6 +162,20 @@ void ASCharacter::PlayElimMontage()
 	}
 }
 
+void ASCharacter::PlayReloadMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ReloadMontage)
+	{
+		AnimInstance->Montage_Play(ReloadMontage);
+		FName SectionName;
+		SectionName = FName("Rifle");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
 void ASCharacter::Elim()
 {
 	MulticastElim();
@@ -173,6 +188,10 @@ void ASCharacter::Elim()
 
 void ASCharacter::MulticastElim_Implementation()
 {
+	if (SPlayerController)
+	{
+		SPlayerController->SetHUDWeaponAmmo(0, 0);
+	}
 	bElimmed = true;
 
 	//Disable any character movement
@@ -278,6 +297,18 @@ void ASCharacter::CrouchButtonPressed()
 	}
 }
 
+void ASCharacter::ReloadButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->Reload();
+		if (bIsSprinting && Combat->EquippedWeapon)
+		{
+			ServerSprintButtonReleased();
+		}
+	}
+}
+
 void ASCharacter::AimButtonPressed()
 {
 	if (Combat && Combat->EquippedWeapon)
@@ -319,7 +350,7 @@ void ASCharacter::SprintButtonPressed()
 	FVector CharacterVelocity = GetCharacterMovement()->Velocity;
 	bool bIsMovingForward = FVector::DotProduct(ForwardVector, CharacterVelocity) > 0;
 
-	if (!bIsMovingForward || IsAiming()) return;
+	if (!bIsMovingForward || IsAiming() || GetCombatState() == ECombatState::ECS_Reloading) return;
 
 	if (HasAuthority())
 	{
@@ -561,6 +592,12 @@ bool ASCharacter::IsWeaponEquipped()
 bool ASCharacter::IsAiming()
 {
 	return (Combat && Combat->bAiming);
+}
+
+ECombatState ASCharacter::GetCombatState() const
+{
+	if (Combat == nullptr) return ECombatState::ECS_MAX;
+	return Combat->CombatState;
 }
 
 AWeapon* ASCharacter::GetEquippedWeapon()

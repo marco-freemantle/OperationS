@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "OperationS/Weapon/Weapon.h"
+#include "OperationS/STypes/CombatState.h"
 
 void USAnimInstance::NativeInitializeAnimation()
 {
@@ -45,6 +46,7 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	TurningInPlace = SCharacter->GetTurningInPlace();
 	bIsSprinting = SCharacter->GetIsSprinting();
 	bElimmed = SCharacter->IsElimmed();
+	bUseFABRIK = SCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 
 	//Offset yaw for strafing
 	FRotator AimRotation = SCharacter->GetBaseAimRotation();

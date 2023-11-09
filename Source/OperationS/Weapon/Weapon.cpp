@@ -10,6 +10,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Casing.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "OperationS/PlayerController/SPlayerController.h"
 
 AWeapon::AWeapon()
 {
@@ -31,6 +32,24 @@ AWeapon::AWeapon()
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(RootComponent);
+}
+
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+
+	//Overlaps are only performed on the server
+	if (HasAuthority())
+	{
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
+		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
+	}
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(false);
+	}
 }
 
 void AWeapon::Fire(const FVector& HitTarget)
@@ -56,32 +75,7 @@ void AWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 	}
-}
-
-void AWeapon::Dropped()
-{
-	SetWeaponState(EWeaponState::EWS_Dropped);
-	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
-	WeaponMesh->DetachFromComponent(DetachRules);
-	SetOwner(nullptr);
-}
-
-void AWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	//Overlaps are only performed on the server
-	if (HasAuthority())
-	{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
-		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
-	}
-	if (PickupWidget)
-	{
-		PickupWidget->SetVisibility(false);
-	}
+	SpendRound();
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -95,8 +89,8 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
+	DOREPLIFETIME(AWeapon, Ammo);
 }
-
 //Will only execute on the server
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -114,6 +108,51 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	if (SCharacter)
 	{
 		SCharacter->SetOverlappingWeapon(nullptr);
+	}
+}
+
+void AWeapon::SetHUDAmmo()
+{
+	SOwnerCharacter = SOwnerCharacter == nullptr ? Cast<ASCharacter>(GetOwner()) : SOwnerCharacter;
+	if (SOwnerCharacter)
+	{
+		SOwnerController = SOwnerController == nullptr ? Cast<ASPlayerController>(SOwnerCharacter->Controller) : SOwnerController;
+		if (SOwnerController)
+		{
+			SOwnerController->SetHUDWeaponAmmo(Ammo, MagCapacity);
+		}
+	}
+}
+
+void AWeapon::SpendRound()
+{
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
+	SetHUDAmmo();
+}
+
+void AWeapon::ResetClip()
+{
+	Ammo = MagCapacity;
+	SetHUDAmmo();
+}
+
+
+void AWeapon::OnRep_Ammo()
+{
+	SetHUDAmmo();
+}
+
+void AWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	if (Owner == nullptr)
+	{
+		SOwnerCharacter = nullptr;
+		SOwnerController = nullptr;
+	}
+	else
+	{
+		SetHUDAmmo();
 	}
 }
 
@@ -158,6 +197,21 @@ void AWeapon::OnRep_WeaponState()
 		break;
 	}
 
+}
+
+bool AWeapon::IsEmpty()
+{
+	return Ammo <= 0;
+}
+
+void AWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+	SetOwner(nullptr);
+	SOwnerCharacter = nullptr;
+	SOwnerController = nullptr;
 }
 
 void AWeapon::ShowPickupWidget(bool bShowWidget)

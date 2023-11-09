@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "OperationS/STypes/TurningInPlace.h"
 #include "OperationS/Interfaces/InteractWithCrosshairsInterface.h"
+#include "OperationS/STypes/CombatState.h"
 #include "SCharacter.generated.h"
 
 UCLASS()
@@ -33,6 +34,8 @@ public:
 
 	void PlayElimMontage();
 
+	void PlayReloadMontage();
+
 	void Elim();
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -50,6 +53,7 @@ protected:
 	void LookUp(float Value);
 	void EquipButtonPressed();
 	void CrouchButtonPressed();
+	void ReloadButtonPressed();
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void FireButtonPressed();
@@ -85,7 +89,7 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 
 	UFUNCTION(Server, Reliable)
@@ -114,6 +118,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ElimMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(Replicated)
 	bool bIsSprinting;
@@ -164,6 +171,7 @@ public:
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	ECombatState GetCombatState() const;
 	AWeapon* GetEquippedWeapon();
 
 	FVector GetHitTarget() const;
