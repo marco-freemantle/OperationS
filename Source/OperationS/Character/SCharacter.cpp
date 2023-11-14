@@ -17,6 +17,7 @@
 #include "Components/CapsuleComponent.h"
 #include "TimerManager.h"
 #include "OperationS/PlayerState/SPlayerState.h"
+#include "Components/SpotLightComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -110,6 +111,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintButtonPressed);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintButtonReleased);
+	PlayerInputComponent->BindAction("ToggleLight", IE_Pressed, this, &ASCharacter::ToggleLightButtonPressed);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
@@ -380,10 +382,23 @@ void ASCharacter::SprintButtonReleased()
 	}
 }
 
+void ASCharacter::ToggleLightButtonPressed()
+{
+	ServerToggleLightButtonPressed();
+}
+
+void ASCharacter::ServerToggleLightButtonPressed_Implementation()
+{
+	if (HasAuthority() && Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->MulticastToggleLight();
+	}
+}
+
 void ASCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
-	PlayHitReactMontage();
+	//PlayHitReactMontage();
 	UpdateHUDHealth();
 
 	if (Health == 0.f)

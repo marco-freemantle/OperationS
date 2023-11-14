@@ -60,6 +60,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	USoundBase* EquipSound;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* ToggleFlashlightSound;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class USpotLightComponent* Flashlight;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastToggleLight();
+
 	//Automatic fire
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float FireDelay = .25f;
@@ -133,10 +142,13 @@ private:
 	UPROPERTY()
 	class ASPlayerController* SOwnerController;
 
+	bool bIsFlashlightOn = false;
+
 public:	
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+	FORCEINLINE float GetIsFlashlightOn() const { return bIsFlashlightOn; }
 	bool IsEmpty();
 };

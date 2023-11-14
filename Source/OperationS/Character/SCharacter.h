@@ -60,6 +60,7 @@ protected:
 	void FireButtonReleased();
 	void SprintButtonPressed();
 	void SprintButtonReleased();
+	void ToggleLightButtonPressed();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
@@ -86,6 +87,9 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon* OverlappingWeapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UCameraShakeBase* CameraShake;
+
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
@@ -100,6 +104,9 @@ private:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSprintButtonReleased();
+
+	UFUNCTION(Server, Reliable)
+	void ServerToggleLightButtonPressed();
 
 	float AO_Yaw;
 	float InterpAO_Yaw;

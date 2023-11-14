@@ -13,6 +13,8 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "AITypes.h"
 #include "Net/UnrealNetwork.h"
+#include "Operations/GameMode/SGameMode.h"
+#include "Operations/PlayerController/SPlayerController.h"
 
 // Sets default values
 ASZombie::ASZombie()
@@ -22,12 +24,6 @@ ASZombie::ASZombie()
 
 	bReplicates = true;
 	SetReplicateMovement(true);
-
-	DetectAreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("DetectAreaSphere"));
-	DetectAreaSphere->SetupAttachment(RootComponent);
-	DetectAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	DetectAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	DetectAreaSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	AttackAreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AttackAreaSphere"));
 	AttackAreaSphere->SetupAttachment(RootComponent);
@@ -48,16 +44,18 @@ void ASZombie::BeginPlay()
 	//Overlaps only performed on the server
 	if (HasAuthority())
 	{
-		DetectAreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		DetectAreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-		DetectAreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ASZombie::OnDetectSphereOverlap);
-
 		AttackAreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AttackAreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		AttackAreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ASZombie::OnAttackSphereOverlap);
 
 		FTimerHandle SearchForPlayerTimerHandle;
 		GetWorldTimerManager().SetTimer(SearchForPlayerTimerHandle, this, &ThisClass::FindClosestPlayer, 0.5f, true);
+
+		FTimerHandle SearchForAlivePlayersTimerHandle;
+		GetWorldTimerManager().SetTimer(SearchForAlivePlayersTimerHandle, this, &ThisClass::UpdateAlivePlayersArray, 1.f, true);
+
+		OnTakeAnyDamage.AddDynamic(this, &ASZombie::ReceiveDamage);
+
 	}
 }
 
@@ -67,6 +65,7 @@ void ASZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 
 	DOREPLIFETIME(ASZombie, bCanAttack);
 	DOREPLIFETIME(ASZombie, ClosestCharacter);
+	DOREPLIFETIME(ASZombie, Health);
 }
 
 void ASZombie::Tick(float DeltaTime)
@@ -75,34 +74,44 @@ void ASZombie::Tick(float DeltaTime)
 
 }
 
-//Will only execute on the server
-void ASZombie::OnDetectSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ASZombie::UpdateAlivePlayersArray()
 {
-	ASCharacter* SCharacter = Cast<ASCharacter>(OtherActor);
-	if (SCharacter)
+	//Clear the array before updating
+	AlivePlayers.Empty();
+
+	//Get all actors of type ASCharacter in the world
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASCharacter::StaticClass(), FoundActors);
+
+	//Iterate through the found actors and add them to the array
+	for (AActor* FoundActor : FoundActors)
 	{
-		OverlappingCharacters.Add(SCharacter);
+		ASCharacter* SCharacter = Cast<ASCharacter>(FoundActor);
+		if (SCharacter && SCharacter->GetHealth() > 0.f)
+		{
+			AlivePlayers.Add(SCharacter);
+		}
 	}
 }
 
 void ASZombie::FindClosestPlayer()
 {
-	if (ClosestCharacter == nullptr && OverlappingCharacters.Num() > 0)
+	if (ClosestCharacter == nullptr && AlivePlayers.Num() > 0)
 	{
-		ClosestCharacter = OverlappingCharacters[0];
+		ClosestCharacter = AlivePlayers[0];
 	}
 	if (!ClosestCharacter) return;
-	for (AActor* OverlappingActor : OverlappingCharacters)
+	for (AActor* AlivePlayer : AlivePlayers)
 	{
 		//Check if the overlapping actor is of type ACharacter
-		ASCharacter* OverlappingCharacter = Cast<ASCharacter>(OverlappingActor);
+		ASCharacter* Player = Cast<ASCharacter>(AlivePlayer);
 
-		if (OverlappingCharacter)
+		if (Player && Player->GetHealth() > 0)
 		{
-			//Get the location of the overlapping character
-			FVector CharacterLocation = OverlappingCharacter->GetActorLocation();
+			//Get the location of the current character
+			FVector CharacterLocation = Player->GetActorLocation();
 
-			//Calculate distance to current array index character
+			//Calculate distance to current character
 			float DistanceToCharacter = FVector::Dist(GetActorLocation(), CharacterLocation);
 
 			//Calculate distance to current closest character
@@ -110,7 +119,7 @@ void ASZombie::FindClosestPlayer()
 
 			if (DistanceToCharacter < DistanceToClosestCharacter)
 			{
-				ClosestCharacter = OverlappingCharacter;
+				ClosestCharacter = Player;
 			}
 
 			MoveToPlayer();
@@ -134,6 +143,24 @@ void ASZombie::OnAttackSphereOverlap(UPrimitiveComponent* OverlappedComponent, A
 		GetWorldTimerManager().SetTimer(StartAttackTimer, this, &ThisClass::MulticastPlayAttackMontage, 1.f, true);
 }
 
+void ASZombie::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+
+	if (Health == 0.f)
+	{
+		//Zombie dead
+		ASGameMode* SGameMode = GetWorld()->GetAuthGameMode<ASGameMode>();
+		if (SGameMode)
+		{
+			ASZombieAIController* ZombieController = Cast<ASZombieAIController>(Controller);
+			ASPlayerController* AttackerController = Cast<ASPlayerController>(InstigatorController);
+			SGameMode->ZombieEliminated(this, ZombieController, AttackerController);
+		}
+		MulticastElim();
+	}
+}
+
 void ASZombie::MulticastPlayAttackMontage_Implementation()
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -149,16 +176,22 @@ void ASZombie::MulticastPlayAttackMontage_Implementation()
 
 void ASZombie::ServerAttackPlayer_Implementation()
 {
-	if (HasAuthority())
+	if (ClosestCharacter && HasAuthority())
 	{
+		if (ClosestCharacter->GetHealth() <= 0)
+		{
+			ClosestCharacter = nullptr;
+			UpdateAlivePlayersArray();
+			
+			return;
+		}
+
 		//Calculate distance to current closest character
 		float DistanceToCharacter = FVector::Dist(GetActorLocation(), ClosestCharacter->GetActorLocation());
 		if (DistanceToCharacter < 150.f)
 		{
-			UGameplayStatics::ApplyDamage(ClosestCharacter, Damage, GetController(), this, UDamageType::StaticClass());
+			UGameplayStatics::ApplyDamage(ClosestCharacter, AttackDamage, GetController(), this, UDamageType::StaticClass());
 			MulticastPlayAttackSound();
-
-			//CHECK IF PLAYER IS DEAD, IF SO, REMOVE FROM OVERLAPPING CHARACTERS
 		}
 	}
 }
@@ -179,5 +212,26 @@ void ASZombie::MulticastPlayAttackSound_Implementation()
 void ASZombie::AttackEnded()
 {
 	bCanAttack = true;
+}
+
+void ASZombie::MulticastElim_Implementation()
+{
+	//Disable any character movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+
+	//Turn off collision for the capsule
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//Enable physics simulation on the skeletal mesh to turn into a ragdoll
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	//Set the mesh to ignore bullet collision
+	GetMesh()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+
+	//Clear alive player array
+	AlivePlayers.Empty();
+	ClosestCharacter = nullptr;
+
+	SetLifeSpan(10.f);
 }
 

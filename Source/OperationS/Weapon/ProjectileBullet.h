@@ -14,6 +14,10 @@ class OPERATIONS_API AProjectileBullet : public AProjectile
 {
 	GENERATED_BODY()
 
+private:
+
+	bool bHasHitSomething;
+
 protected:
 
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;

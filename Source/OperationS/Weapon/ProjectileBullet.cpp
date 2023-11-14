@@ -9,6 +9,9 @@
 
 void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	//Bool stops OnHit being registered serveral times
+	if (bHasHitSomething) return;
+
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
 	if (OwnerCharacter)
 	{
@@ -19,5 +22,6 @@ void AProjectileBullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 		}
 	}
 
+	bHasHitSomething = true;
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 }

@@ -9,6 +9,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundCue.h"
 #include "Operations/Character/SCharacter.h"
+#include "Operations/AI/SZombie.h"
 #include "Operations/OperationS.h"
 #include "Net/UnrealNetwork.h"
 
@@ -56,21 +57,20 @@ void AProjectile::BeginPlay()
 //Only called on the server
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ASCharacter* PlayerHit = Cast<ASCharacter>(OtherActor);
+	//Bool stops OnHit being registered serveral times
+	if (bHasHitSomething) return;
 
-	if (PlayerHit)
-	{
-		bHitFlesh = true;
-	}
-	else
-	{
-		bHitFlesh = false;
-	}
+	ASCharacter* PlayerHit = Cast<ASCharacter>(OtherActor);
+	ASZombie* ZombieHit = Cast<ASZombie>(OtherActor);
+
+	bHitFlesh = (PlayerHit || ZombieHit);
 
 	MulticastPlayHitEffects(bHitFlesh);
 
 	FTimerHandle DestroyTimerHandle;
 	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &ThisClass::DelayedDestroy, 0.05f, false);
+
+	bHasHitSomething = true;
 }
 
 void AProjectile::MulticastPlayHitEffects_Implementation(bool bFleshHit)

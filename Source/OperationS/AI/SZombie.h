@@ -18,9 +18,6 @@ public:
 	ASZombie();
 
 	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* DetectAreaSphere;
-
-	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* AttackAreaSphere;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -32,7 +29,17 @@ public:
 	void MulticastPlayAttackSound();
 
 	UPROPERTY(EditAnywhere)
-	int32 Damage = 20.f;
+	int32 AttackDamage = 20.f;
+
+	//Player health
+	UPROPERTY(EditAnywhere, Category = "Zombie stats")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(Replicated, Category = "Zombie stats", VisibleAnywhere, BlueprintReadWrite)
+	float Health = 100.f;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
 
 protected:
 	// Called when the game starts or when spawned
@@ -44,22 +51,12 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayAttackMontage();
 
+	TArray<class ASCharacter*> AlivePlayers;
 
-
-	TArray<class ASCharacter*> OverlappingCharacters;
+	void UpdateAlivePlayersArray();
 
 	UPROPERTY(Replicated)
 	ASCharacter* ClosestCharacter;
-
-	UFUNCTION()
-	virtual void OnDetectSphereOverlap(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult
-	);
 
 	UFUNCTION()
 	virtual void OnAttackSphereOverlap(
@@ -70,6 +67,9 @@ protected:
 		bool bFromSweep,
 		const FHitResult& SweepResult
 	);
+
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 
 	void FindClosestPlayer();
 

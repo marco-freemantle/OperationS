@@ -26,6 +26,8 @@ protected:
 
 	bool bHitFlesh;
 
+	bool bHasHitSomething;
+
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastPlayHitEffects(bool bFleshHit);
 

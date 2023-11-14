@@ -11,6 +11,8 @@
 #include "Casing.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "OperationS/PlayerController/SPlayerController.h"
+#include "Components/SpotLightComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AWeapon::AWeapon()
 {
@@ -32,6 +34,15 @@ AWeapon::AWeapon()
 
 	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
 	PickupWidget->SetupAttachment(RootComponent);
+
+	Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
+	Flashlight->SetupAttachment(RootComponent);
+	Flashlight->SetLightBrightness(100000.f);
+	Flashlight->SetAttenuationRadius(16500.f);
+	Flashlight->InnerConeAngle = 15.f;
+	Flashlight->OuterConeAngle = 25.f;
+	Flashlight->SetIndirectLightingIntensity(5.f);
+	Flashlight->SetIsReplicated(true);
 }
 
 void AWeapon::BeginPlay()
@@ -49,6 +60,10 @@ void AWeapon::BeginPlay()
 	if (PickupWidget)
 	{
 		PickupWidget->SetVisibility(false);
+	}
+	if (Flashlight)
+	{
+		Flashlight->SetVisibility(false);
 	}
 }
 
@@ -128,6 +143,14 @@ void AWeapon::SpendRound()
 {
 	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
 	SetHUDAmmo();
+}
+
+void AWeapon::MulticastToggleLight_Implementation()
+{
+	bool bIsVisible = Flashlight->IsVisible();
+	Flashlight->SetVisibility(!bIsVisible);
+
+	UGameplayStatics::PlaySoundAtLocation(this, ToggleFlashlightSound, GetActorLocation());
 }
 
 void AWeapon::ResetClip()
