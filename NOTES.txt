@@ -1,11 +1,4 @@
 TODO:
 - DefaultPlatformService=Steam when ready
 - Blackhole and launchpad C++ classes in Survival project
-- Turn left and right in place animations not set up
-- Shell eject rotation should be slightly randomised
-- Projectiles not going towards crosshair sometimes (if trace has no end point)
-- Bullets hit owning player if backed up against a wall
 - Blood effect on hit has incorrect rotation
-- Hit sound should only play on player that was hit and instigating player
-- Possibly remove projectile rifles (use hitscan instead). ONly have projectile explosives
-- Reload walk right snaps left -> reload walk forward snaps back

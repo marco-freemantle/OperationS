@@ -16,10 +16,8 @@
 #include "Operations/GameMode/SGameMode.h"
 #include "Operations/PlayerController/SPlayerController.h"
 
-// Sets default values
 ASZombie::ASZombie()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	bReplicates = true;
@@ -143,6 +141,19 @@ void ASZombie::OnAttackSphereOverlap(UPrimitiveComponent* OverlappedComponent, A
 		GetWorldTimerManager().SetTimer(StartAttackTimer, this, &ThisClass::MulticastPlayAttackMontage, 1.f, true);
 }
 
+void ASZombie::MulticastPlayAttackMontage_Implementation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage && bCanAttack)
+	{
+		bCanAttack = false;
+		float MontageTime = AnimInstance->Montage_Play(AttackMontage, 1.5f);
+
+		FTimerHandle AttackMontageTimer;
+		GetWorldTimerManager().SetTimer(AttackMontageTimer, this, &ThisClass::AttackEnded, MontageTime, false);
+	}
+}
+
 void ASZombie::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
@@ -158,19 +169,6 @@ void ASZombie::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageTy
 			SGameMode->ZombieEliminated(this, ZombieController, AttackerController);
 		}
 		MulticastElim();
-	}
-}
-
-void ASZombie::MulticastPlayAttackMontage_Implementation()
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && AttackMontage && bCanAttack)
-	{
-		bCanAttack = false;
-		float MontageTime = AnimInstance->Montage_Play(AttackMontage, 1.5f);
-
-		FTimerHandle AttackMontageTimer;
-		GetWorldTimerManager().SetTimer(AttackMontageTimer, this, &ThisClass::AttackEnded, MontageTime, false);
 	}
 }
 
