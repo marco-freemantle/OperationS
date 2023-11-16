@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "OperationS/Interfaces/InteractWithCrosshairsInterface.h"
 #include "AITypes.h"
 #include "SZombie.generated.h"
 
 UCLASS()
-class OPERATIONS_API ASZombie : public ACharacter
+class OPERATIONS_API ASZombie : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 

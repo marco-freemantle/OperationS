@@ -186,7 +186,7 @@ void ASZombie::ServerAttackPlayer_Implementation()
 
 		//Calculate distance to current closest character
 		float DistanceToCharacter = FVector::Dist(GetActorLocation(), ClosestCharacter->GetActorLocation());
-		if (DistanceToCharacter < 150.f)
+		if (DistanceToCharacter < 150.f && Health > 0)
 		{
 			UGameplayStatics::ApplyDamage(ClosestCharacter, AttackDamage, GetController(), this, UDamageType::StaticClass());
 			MulticastPlayAttackSound();
@@ -217,6 +217,10 @@ void ASZombie::MulticastElim_Implementation()
 	//Disable any character movement
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->StopMovementImmediately();
+
+	//Disable animation
+	GetMesh()->SetPlayRate(0.f);
+	AttackAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//Turn off collision for the capsule
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

@@ -352,7 +352,12 @@ void ASCharacter::SprintButtonPressed()
 	FVector CharacterVelocity = GetCharacterMovement()->Velocity;
 	bool bIsMovingForward = FVector::DotProduct(ForwardVector, CharacterVelocity) > 0;
 
-	if (!bIsMovingForward || IsAiming() || GetCombatState() == ECombatState::ECS_Reloading) return;
+	if (!bIsMovingForward || IsAiming()) return;
+
+	if (GetCombatState() == ECombatState::ECS_Reloading)
+	{
+		ServerInteruptReload();
+	}
 
 	if (HasAuthority())
 	{
@@ -379,6 +384,24 @@ void ASCharacter::SprintButtonReleased()
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 500.f;
 		ServerSprintButtonReleased();
+	}
+}
+
+void ASCharacter::ServerInteruptReload_Implementation()
+{
+	MulticastInteruptReload();
+}
+
+void ASCharacter::MulticastInteruptReload_Implementation()
+{
+	//Cancel reload locally before doing it on server
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	UAnimMontage* MontageToStop = AnimInstance->GetCurrentActiveMontage();
+	Combat->CombatState = ECombatState::ECS_Unoccupied;
+	if (MontageToStop)
+	{
+		AnimInstance->Montage_Stop(0.2f, MontageToStop);
 	}
 }
 
