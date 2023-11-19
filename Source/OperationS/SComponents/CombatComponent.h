@@ -90,6 +90,9 @@ public:
 	UFUNCTION()
 	void OnRep_CombatState();
 
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -118,4 +121,14 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void ServerReload();
+
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
+	void DropEquippedWeapon();
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void PlayEquipWeaponSound();
 };

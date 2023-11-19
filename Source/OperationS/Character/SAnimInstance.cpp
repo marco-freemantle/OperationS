@@ -46,7 +46,7 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	TurningInPlace = SCharacter->GetTurningInPlace();
 	bIsSprinting = SCharacter->GetIsSprinting();
 	bElimmed = SCharacter->IsElimmed();
-	bUseFABRIK = SCharacter->GetCombatState() != ECombatState::ECS_Reloading;
+	bUseFABRIK = SCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
 
 	//Offset yaw for strafing
 	FRotator AimRotation = SCharacter->GetBaseAimRotation();

@@ -36,6 +36,8 @@ public:
 
 	void PlayReloadMontage();
 
+	void PlayThrowGrenadeMontage();
+
 	void Elim();
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -61,6 +63,7 @@ protected:
 	void SprintButtonPressed();
 	void SprintButtonReleased();
 	void ToggleLightButtonPressed();
+	void GrenadeButtonPressed();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
@@ -134,6 +137,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ReloadMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ThrowGrenadeMontage;
 
 	UPROPERTY(Replicated)
 	bool bIsSprinting;
