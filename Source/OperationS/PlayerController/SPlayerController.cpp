@@ -101,7 +101,7 @@ void ASPlayerController::SetHUDTime()
 
 	if (CountDownInt != SecondsLeft)
 	{
-		SetHUDMatchCountDown(MatchTime - GetServerTime());
+		SetHUDMatchCountDown(GetServerTime());
 	}
 
 	CountDownInt = SecondsLeft;

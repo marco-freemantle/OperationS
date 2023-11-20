@@ -58,6 +58,10 @@ ASCharacter::ASCharacter()
 
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
+
+	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
+	AttachedGrenade->SetupAttachment(GetMesh(), FName("GrenadeSocket"));
+	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -78,6 +82,10 @@ void ASCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ASCharacter::ReceiveDamage);
+	}
+	if (AttachedGrenade)
+	{
+		AttachedGrenade->SetVisibility(false);
 	}
 }
 
@@ -253,7 +261,7 @@ void ASCharacter::MoveForward(float Value)
 
 void ASCharacter::MoveRight(float Value)
 {
-	if ((Value == 1.f || Value == -1.f) && bIsSprinting && Combat->EquippedWeapon)
+	if ((Value == 1.f || Value == -1.f) && bIsSprinting && Combat && Combat->EquippedWeapon)
 	{
 		SprintButtonReleased();
 	}

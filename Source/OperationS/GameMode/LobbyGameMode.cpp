@@ -23,6 +23,7 @@ void ALobbyGameMode::StartTravel()
     if (World)
     {
         bUseSeamlessTravel = true;
-        World->ServerTravel(FString("/Game/Maps/MainLevel?listen"));
+        FString PathToMap = FString::Printf(TEXT("%s?listen"), *MapToTravelToPath);
+        World->ServerTravel(PathToMap);
     }
 }

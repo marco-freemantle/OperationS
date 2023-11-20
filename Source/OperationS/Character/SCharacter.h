@@ -170,6 +170,10 @@ private:
 
 	void ElimTimerFinished();
 
+	//Grenade
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* AttachedGrenade;
+
 public:	
 
 	//Replicated for animation blueprint
@@ -190,6 +194,7 @@ public:
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	FORCEINLINE UStaticMeshComponent* GetAttachedGrenade() const { return AttachedGrenade; }
 	ECombatState GetCombatState() const;
 	AWeapon* GetEquippedWeapon();
 

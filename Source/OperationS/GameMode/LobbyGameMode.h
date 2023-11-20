@@ -21,4 +21,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int32 PlayersNeededToStartMatch;
+
+	UPROPERTY(EditAnywhere)
+	FString MapToTravelToPath{ TEXT("") };
 };

@@ -24,7 +24,10 @@ public:
 	//Gives ASCharacter full access to this class' members
 	friend class ASCharacter;
 
-	void EquipWeapon(class AWeapon* WeaponToEquip);
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AWeapon> StartingWeapon;
+
+	void EquipWeapon(AWeapon* WeaponToEquip);
 
 	class ASCharacter* Character;
 
@@ -93,6 +96,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
 
+	UFUNCTION(BlueprintCallable)
+	void LaunchGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -127,8 +136,12 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerThrowGrenade();
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> GrenadeClass;
+
 	void DropEquippedWeapon();
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
 	void PlayEquipWeaponSound();
+	void ShowAttachedGrenade(bool bShowGrenade);
 };

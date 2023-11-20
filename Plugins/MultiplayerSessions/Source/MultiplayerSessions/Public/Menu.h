@@ -26,12 +26,24 @@ protected:
 	//Callbacks for the custom delegates on the MultiplayerSessionsSubsystem
 	UFUNCTION()
 	void OnCreateSession(bool bWasSuccessful);
+
 	void OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful);
 	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
+
 	UFUNCTION()
 	void OnDestroySession(bool bWasSuccessful);
+
 	UFUNCTION()
 	void OnStartSession(bool bWasSuccessful);
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 NumPublicConnections{ 4 };
+
+	UPROPERTY(BlueprintReadWrite)
+	FString MatchType{ TEXT("FreeForAll") };
+
+	UPROPERTY(BlueprintReadWrite)
+	FString PathToLobby{ TEXT("") };
 
 private:
 
@@ -51,8 +63,4 @@ private:
 
 	//The subsystem designed to handle all online session functionality
 	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
-
-	int32 NumPublicConnections{4};
-	FString MatchType{TEXT("FreeForAll")};
-	FString PathToLobby{TEXT("")};
 };
