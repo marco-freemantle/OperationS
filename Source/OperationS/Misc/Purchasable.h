@@ -22,7 +22,16 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Purchasable Properties")
 	UStaticMeshComponent* PurchasableMesh;
 
+	UPROPERTY(EditAnywhere)
+	class USoundBase* PurchaseSuccessSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* PurchaseFailSound;
+
 	virtual void MakePurchase(class ASPlayerState* PlayerState);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayPurchaseAudio(bool bCanAffordPurchase);
 
 protected:
 	virtual void BeginPlay() override;

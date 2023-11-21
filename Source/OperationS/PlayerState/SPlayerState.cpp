@@ -4,10 +4,18 @@
 #include "SPlayerState.h"
 #include "OperationS/Character/SCharacter.h"
 #include "OperationS/PlayerController/SPlayerController.h"
+#include "Net/UnrealNetwork.h"
+
+void ASPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASPlayerState, PlayerScore);
+}
 
 void ASPlayerState::AddToScore(float ScoreAmount)
 {
-	SetScore(GetScore() + ScoreAmount);
+	PlayerScore = PlayerScore + ScoreAmount;
 
 	Character = Character == nullptr ? Cast<ASCharacter>(GetPawn()) : Character;
 	if (Character)
@@ -15,22 +23,20 @@ void ASPlayerState::AddToScore(float ScoreAmount)
 		Controller = Controller == nullptr ? Cast<ASPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(GetScore());
+			Controller->SetHUDScore(PlayerScore);
 		}
 	}
 }
 
-void ASPlayerState::OnRep_Score()
+void ASPlayerState::OnRep_PlayerScore()
 {
-	Super::OnRep_Score();
-
 	Character = Character == nullptr ? Cast<ASCharacter>(GetPawn()) : Character;
 	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ASPlayerController>(Character->Controller) : Controller;
 		if (Controller)
 		{
-			Controller->SetHUDScore(GetScore());
+			Controller->SetHUDScore(PlayerScore);
 		}
 	}
 }

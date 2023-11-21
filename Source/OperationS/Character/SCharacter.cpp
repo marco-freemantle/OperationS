@@ -312,10 +312,6 @@ void ASCharacter::EquipButtonPressed()
 				OverlappingPurchasable->MakePurchase(ThisPlayerState);
 			}
 		}
-		else
-		{
-			ServerEquipButtonPressed();
-		}
 	}
 }
 

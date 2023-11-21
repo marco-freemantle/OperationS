@@ -78,11 +78,33 @@ void APurchasable::ShowPickupWidget(bool bShowWidget)
 	}
 }
 
+//Only called on the server
 void APurchasable::MakePurchase(ASPlayerState* PlayerState)
 {
-	if (PlayerState && PlayerState->GetScore() > PriceToPurchase)
+	if (PlayerState && HasAuthority())
 	{
-		PlayerState->AddToScore(-PriceToPurchase);
+		bool bCanAffordPurchase = PlayerState->PlayerScore > PriceToPurchase;
+		if (bCanAffordPurchase)
+		{
+			PlayerState->AddToScore(-PriceToPurchase);
+		}
+		MulticastPlayPurchaseAudio(bCanAffordPurchase);
+	}
+}
+
+void APurchasable::MulticastPlayPurchaseAudio_Implementation(bool bCanAffordPurchase)
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CanAfford: %s"), bCanAffordPurchase ? TEXT("true") : TEXT("false")));
+	}
+	if (!bCanAffordPurchase && PurchaseFailSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, PurchaseFailSound, GetActorLocation());
+	}
+	if (bCanAffordPurchase && PurchaseSuccessSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, PurchaseSuccessSound, GetActorLocation());
 	}
 }
 

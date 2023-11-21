@@ -16,9 +16,15 @@ class OPERATIONS_API ASPlayerState : public APlayerState
 
 public:
 
-	virtual void OnRep_Score() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void AddToScore(float ScoreAmount);
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerScore, BlueprintReadWrite)
+	float PlayerScore;
+
+	UFUNCTION()
+	void OnRep_PlayerScore();
 
 private:
 
