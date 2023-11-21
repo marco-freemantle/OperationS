@@ -51,6 +51,7 @@ ASCharacter::ASCharacter()
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 
 	bIsSprinting = false;
 
@@ -62,6 +63,7 @@ ASCharacter::ASCharacter()
 	AttachedGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Attached Grenade"));
 	AttachedGrenade->SetupAttachment(GetMesh(), FName("GrenadeSocket"));
 	AttachedGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 }
 
 void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -120,7 +122,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintButtonPressed);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintButtonReleased);
 	PlayerInputComponent->BindAction("ToggleLight", IE_Pressed, this, &ASCharacter::ToggleLightButtonPressed);
-	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ASCharacter::GrenadeButtonPressed);
+	//PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ASCharacter::GrenadeButtonPressed);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
@@ -324,6 +326,7 @@ void ASCharacter::ReloadButtonPressed()
 		Combat->Reload();
 		if (bIsSprinting && Combat->EquippedWeapon)
 		{
+			GetCharacterMovement()->MaxWalkSpeed = 500.f;
 			ServerSprintButtonReleased();
 		}
 	}
@@ -377,32 +380,29 @@ void ASCharacter::SprintButtonPressed()
 		ServerInteruptReload();
 	}
 
-	if (HasAuthority())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 800.f;
-		bIsSprinting = true;
-	}
-	else
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 800;
-		ServerSprintButtonPressed();
-	}
+	GetCharacterMovement()->MaxWalkSpeed = 800.f;
+	ServerSprintButtonPressed();
+
 }
 
 void ASCharacter::SprintButtonReleased()
 {
 	if (!bIsSprinting) return;
 
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	ServerSprintButtonReleased();
+}
+
+void ASCharacter::ServerSprintButtonPressed_Implementation()
+{
+	bIsSprinting = true;
+	GetCharacterMovement()->MaxWalkSpeed = 800.f;
+}
+
+void ASCharacter::ServerSprintButtonReleased_Implementation()
+{
 	bIsSprinting = false;
-	if (HasAuthority())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	}
-	else
-	{
-		GetCharacterMovement()->MaxWalkSpeed = 500.f;
-		ServerSprintButtonReleased();
-	}
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 }
 
 void ASCharacter::ServerInteruptReload_Implementation()
@@ -459,24 +459,6 @@ void ASCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 			ASPlayerController* AttackerController = Cast<ASPlayerController>(InstigatorController);
 			SGameMode->PlayerEliminated(this, SPlayerController, AttackerController);
 		}
-	}
-}
-
-void ASCharacter::ServerSprintButtonPressed_Implementation()
-{
-	if (HasAuthority())
-	{
-		bIsSprinting = true;
-		GetCharacterMovement()->MaxWalkSpeed = 800.f;
-	}
-}
-
-void ASCharacter::ServerSprintButtonReleased_Implementation()
-{
-	if (HasAuthority())
-	{
-		bIsSprinting = false;
-		GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	}
 }
 

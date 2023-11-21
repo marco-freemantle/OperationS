@@ -25,8 +25,8 @@ protected:
 
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastPlayHitEffects(bool bFleshHit);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayHitEffects(bool bFleshHit, FTransform SocketTransform);
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;

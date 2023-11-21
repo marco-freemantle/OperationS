@@ -106,13 +106,13 @@ private:
 	void ServerSprintButtonPressed();
 
 	UFUNCTION(Server, Reliable)
+	void ServerSprintButtonReleased();
+
+	UFUNCTION(Server, Reliable)
 	void ServerInteruptReload();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastInteruptReload();
-
-	UFUNCTION(Server, Reliable)
-	void ServerSprintButtonReleased();
 
 	UFUNCTION(Server, Reliable)
 	void ServerToggleLightButtonPressed();

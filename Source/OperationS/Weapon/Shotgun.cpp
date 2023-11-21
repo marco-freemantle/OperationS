@@ -26,7 +26,6 @@ void AShotgun::Fire(const FVector& HitTarget)
 		TMap<ASZombie*, uint32> ZombieHitMap;
 		for (uint32 i = 0; i < NumberOfPellets; i++)
 		{
-			//FHitResult FireHit;
 			WeaponTraceHit(Start, HitTarget, FireHit);
 
 			ASCharacter* SCharacter = Cast<ASCharacter>(FireHit.GetActor());
@@ -34,7 +33,7 @@ void AShotgun::Fire(const FVector& HitTarget)
 
 			bool bHitFlesh = (SCharacter || Zombie);
 
-			MulticastPlayHitEffects(bHitFlesh);
+			MulticastPlayHitEffects(bHitFlesh, SocketTransform);
 
 			if (HasAuthority() && InstigatorController)
 			{

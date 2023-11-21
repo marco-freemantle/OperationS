@@ -40,10 +40,9 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 		bool bHitFlesh = (SCharacter || Zombie);
 
-		MulticastPlayHitEffects(bHitFlesh);
-
 		if (HasAuthority() && InstigatorController)
 		{
+			MulticastPlayHitEffects(bHitFlesh, SocketTransform);
 			if (SCharacter)
 			{
 				UGameplayStatics::ApplyDamage(
@@ -66,42 +65,10 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			}
 		}
 		
-		if (BeamParticles)
-		{
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BeamParticles,
-				SocketTransform
-			);
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("Target"), FireHit.ImpactPoint);
-			}
-		}
-		if (MuzzleFlash)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				MuzzleFlash,
-				SocketTransform
-			);
-		}
-		if (FireSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(
-				this,
-				FireSound,
-				GetActorLocation()
-			);
-		}
-		
-		
 		UWorld* World = GetWorld();
 
 		FCollisionQueryParams CollisionParams;
 		CollisionParams.AddIgnoredActor(GetOwner());
-
-		
 	}
 }
 
@@ -146,8 +113,36 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 	}
 }
 
-void AHitScanWeapon::MulticastPlayHitEffects_Implementation(bool bFleshHit)
+void AHitScanWeapon::MulticastPlayHitEffects_Implementation(bool bFleshHit, FTransform SocketTransform)
 {
+	if (BeamParticles)
+	{
+		UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			BeamParticles,
+			SocketTransform
+		);
+		if (Beam)
+		{
+			Beam->SetVectorParameter(FName("Target"), FireHit.ImpactPoint);
+		}
+	}
+	if (MuzzleFlash)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			MuzzleFlash,
+			SocketTransform
+		);
+	}
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			FireSound,
+			GetActorLocation()
+		);
+	}
 	if (bFleshHit)
 	{
 		if (FleshImpactParticles)
