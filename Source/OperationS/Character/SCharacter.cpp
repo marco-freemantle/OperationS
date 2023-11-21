@@ -18,6 +18,7 @@
 #include "TimerManager.h"
 #include "OperationS/PlayerState/SPlayerState.h"
 #include "Components/SpotLightComponent.h"
+#include "Operations/Misc/Purchasable.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -71,9 +72,33 @@ void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ASCharacter, OverlappingWeapon, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ASCharacter, OverlappingPurchasable, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ASCharacter, bHasJumped, COND_SimulatedOnly);
 	DOREPLIFETIME(ASCharacter, bIsSprinting);
 	DOREPLIFETIME(ASCharacter, Health);
+}
+
+void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ASCharacter::EquipButtonPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ASCharacter::CrouchButtonPressed);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ASCharacter::ReloadButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ASCharacter::AimButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ASCharacter::AimButtonReleased);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASCharacter::FireButtonReleased);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintButtonPressed);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintButtonReleased);
+	PlayerInputComponent->BindAction("ToggleLight", IE_Pressed, this, &ASCharacter::ToggleLightButtonPressed);
+	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ASCharacter::GrenadeButtonPressed);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Turn", this, &ASCharacter::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &ASCharacter::LookUp);
 }
 
 void ASCharacter::BeginPlay()
@@ -105,29 +130,6 @@ void ASCharacter::Tick(float DeltaTime)
 	AimOffset(DeltaTime);
 	HideCameraIfCharacterClose();
 	PollInit();
-}
-
-void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
-	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ASCharacter::EquipButtonPressed);
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ASCharacter::CrouchButtonPressed);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ASCharacter::ReloadButtonPressed);
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ASCharacter::AimButtonPressed);
-	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ASCharacter::AimButtonReleased);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FireButtonPressed);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASCharacter::FireButtonReleased);
-	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintButtonPressed);
-	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintButtonReleased);
-	PlayerInputComponent->BindAction("ToggleLight", IE_Pressed, this, &ASCharacter::ToggleLightButtonPressed);
-	//PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ASCharacter::GrenadeButtonPressed);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &ASCharacter::Turn);
-	PlayerInputComponent->BindAxis("LookUp", this, &ASCharacter::LookUp);
 }
 
 void ASCharacter::PostInitializeComponents()
@@ -287,6 +289,7 @@ void ASCharacter::LookUp(float Value)
 
 void ASCharacter::EquipButtonPressed()
 {
+	//Equip Weapon
 	if (Combat)
 	{
 		if (HasAuthority())
@@ -296,6 +299,40 @@ void ASCharacter::EquipButtonPressed()
 		else
 		{
 			ServerEquipButtonPressed();
+		}
+	}
+	//Purchase overlapping purchasable
+	if (OverlappingPurchasable)
+	{
+		if (HasAuthority())
+		{
+			ASPlayerState* ThisPlayerState = SPlayerState ? Cast<ASPlayerState>(GetController()->PlayerState) : nullptr;
+			if (SPlayerState)
+			{
+				OverlappingPurchasable->MakePurchase(ThisPlayerState);
+			}
+		}
+		else
+		{
+			ServerEquipButtonPressed();
+		}
+	}
+}
+
+void ASCharacter::ServerEquipButtonPressed_Implementation()
+{
+	//Equip Weapon
+	if (Combat && HasAuthority())
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+	//Purchase overlapping purchasable
+	if (OverlappingPurchasable && HasAuthority())
+	{
+		ASPlayerState* ThisPlayerState = SPlayerState ? Cast<ASPlayerState>(GetController()->PlayerState) : nullptr;
+		if (ThisPlayerState)
+		{
+			OverlappingPurchasable->MakePurchase(ThisPlayerState);
 		}
 	}
 }
@@ -590,11 +627,16 @@ void ASCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 }
 
-void ASCharacter::ServerEquipButtonPressed_Implementation()
+//Only executed on client since replication only works server->client
+void ASCharacter::OnRep_OverlappingPurchasable(APurchasable* LastPurchasable)
 {
-	if (Combat && HasAuthority())
+	if (OverlappingPurchasable)
 	{
-		Combat->EquipWeapon(OverlappingWeapon);
+		OverlappingPurchasable->ShowPickupWidget(true);
+	}
+	if (LastPurchasable)
+	{
+		LastPurchasable->ShowPickupWidget(false);
 	}
 }
 
@@ -626,6 +668,22 @@ void ASCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 		if (OverlappingWeapon)
 		{
 			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+
+void ASCharacter::SetOverlappingPurchasable(APurchasable* Purchasable)
+{
+	if (OverlappingPurchasable)
+	{
+		OverlappingPurchasable->ShowPickupWidget(false);
+	}
+	OverlappingPurchasable = Purchasable;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingPurchasable)
+		{
+			OverlappingPurchasable->ShowPickupWidget(true);
 		}
 	}
 }

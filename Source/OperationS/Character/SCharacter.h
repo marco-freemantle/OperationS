@@ -90,11 +90,17 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	class AWeapon* OverlappingWeapon;
 
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingPurchasable)
+	class APurchasable* OverlappingPurchasable;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCameraShakeBase* CameraShake;
 
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
+
+	UFUNCTION()
+	void OnRep_OverlappingPurchasable(APurchasable* LastPurchasable);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
@@ -181,6 +187,8 @@ public:
 	bool bHasJumped;
 
 	void SetOverlappingWeapon(AWeapon* Weapon);
+
+	void SetOverlappingPurchasable(APurchasable* Purchasable);
 
 	bool IsWeaponEquipped();
 
