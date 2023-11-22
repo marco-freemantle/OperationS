@@ -30,8 +30,10 @@ public:
 
 	virtual void MakePurchase(class ASPlayerState* PlayerState);
 
+	bool bCanAffordPurchase = false;
+
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastPlayPurchaseAudio(bool bCanAffordPurchase);
+	void MulticastPlayPurchaseAudio(bool bCanAfford);
 
 protected:
 	virtual void BeginPlay() override;

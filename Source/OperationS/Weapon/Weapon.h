@@ -27,6 +27,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere)
+	FString WeaponName;
+
 	void ShowPickupWidget(bool bShowWidget);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -70,7 +73,7 @@ public:
 	void MulticastToggleLight();
 
 	//Automatic fire
-	UPROPERTY(EditAnywhere, Category = Combat)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat)
 	float FireDelay = .25f;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
@@ -79,7 +82,7 @@ public:
 	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 MagCapacity;
 
 	void ResetClip();

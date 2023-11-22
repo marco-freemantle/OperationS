@@ -19,7 +19,7 @@ public:
 
 	void SetHUDScore(float Score);
 
-	void SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity);
+	void SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity, FString WeaponName);
 
 	void SetHUDMatchCountDown(float CountDownTime);
 

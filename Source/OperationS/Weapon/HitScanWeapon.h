@@ -19,6 +19,9 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage = 20.f;
+
 protected:
 
 	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
@@ -27,9 +30,6 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayHitEffects(bool bFleshHit, FTransform SocketTransform);
-
-	UPROPERTY(EditAnywhere)
-	float Damage = 20.f;
 
 	UPROPERTY(Replicated)
 	FHitResult FireHit;

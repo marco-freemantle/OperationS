@@ -70,14 +70,17 @@ void ASPlayerController::SetHUDScore(float Score)
 	}
 }
 
-void ASPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity)
+void ASPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity, FString WeaponName)
 {
 	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
 
-	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->WeaponAmmoAmount)
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->WeaponAmmoAmount && SHUD->CharacterOverlay->WeaponAmmoLimit && SHUD->CharacterOverlay->WeaponNameText)
 	{
-		FString AmmoText = FString::Printf(TEXT("%d/%d"), Ammo, MagCapacity);
+		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		FString AmmoTextLimit = FString::Printf(TEXT("%d"), MagCapacity);
 		SHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+		SHUD->CharacterOverlay->WeaponAmmoLimit->SetText(FText::FromString(AmmoTextLimit));
+		SHUD->CharacterOverlay->WeaponNameText->SetText(FText::FromString(WeaponName));
 	}
 }
 

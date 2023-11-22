@@ -214,7 +214,7 @@ void ASCharacter::MulticastElim_Implementation()
 {
 	if (SPlayerController)
 	{
-		SPlayerController->SetHUDWeaponAmmo(0, 0);
+		SPlayerController->SetHUDWeaponAmmo(0, 0, FString("No Weapon"));
 	}
 	bElimmed = true;
 

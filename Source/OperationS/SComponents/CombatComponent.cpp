@@ -45,14 +45,6 @@ void UCombatComponent::BeginPlay()
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
 		}
-		/*if (StartingWeapon)
-		{
-			AWeapon* SpawnedStartingWeapon = GetWorld()->SpawnActor<AWeapon>(StartingWeapon);
-			if (SpawnedStartingWeapon)
-			{
-				EquipWeapon(SpawnedStartingWeapon);
-			}
-		}*/
 	}
 }
 
@@ -85,6 +77,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
+
+	//Set weapon name text
 
 	PlayEquipWeaponSound();
 

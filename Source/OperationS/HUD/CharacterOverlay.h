@@ -29,5 +29,11 @@ public:
 	UTextBlock* WeaponAmmoAmount;
 
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WeaponAmmoLimit;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WeaponNameText;
+
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MatchCountDownText;
 };
