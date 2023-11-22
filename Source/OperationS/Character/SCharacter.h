@@ -43,6 +43,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UCombatComponent* Combat;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -101,9 +104,6 @@ private:
 
 	UFUNCTION()
 	void OnRep_OverlappingPurchasable(APurchasable* LastPurchasable);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UCombatComponent* Combat;
 
 	UFUNCTION(Server, Reliable)
 	void ServerEquipButtonPressed();
