@@ -83,7 +83,7 @@ void APurchasable::MakePurchase(ASPlayerState* PlayerState)
 {
 	if (PlayerState && HasAuthority())
 	{
-		bCanAffordPurchase = PlayerState->PlayerScore > PriceToPurchase;
+		bCanAffordPurchase = PlayerState->PlayerScore >= PriceToPurchase;
 		if (bCanAffordPurchase)
 		{
 			PlayerState->AddToScore(-PriceToPurchase);

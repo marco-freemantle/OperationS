@@ -40,11 +40,8 @@ void APurchasableBarrier::MulticastPlayBarrierMoveAudio_Implementation()
 
 void APurchasableBarrier::ServerMoveBarrier_Implementation()
 {
-    // Get the current location of the object
     FVector CurrentLocation = GetActorLocation();
 
-    // Interpolate between the current location and the new location over time
-    float InterpolationSpeed = 5.0f; // Adjust this value to control the speed of interpolation
     FVector SmoothedLocation = FMath::VInterpTo(CurrentLocation, DesiredBarrierLocation, GetWorld()->GetDeltaSeconds(), InterpolationSpeed);
 
     // Set the new smoothed location for the object

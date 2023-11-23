@@ -16,6 +16,7 @@ class OPERATIONS_API ASPlayerController : public APlayerController
 
 public:
 	void SetHUDHealth(float Health, float MaxHealth);
+	void SetHUDShield(float Shield, float MaxShield);
 
 	void SetHUDScore(float Score);
 

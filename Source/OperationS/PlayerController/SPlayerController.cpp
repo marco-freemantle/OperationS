@@ -59,6 +59,19 @@ void ASPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	}
 }
 
+void ASPlayerController::SetHUDShield(float Shield, float MaxShield)
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->ShieldBar && SHUD->CharacterOverlay->ShieldText)
+	{
+		const float ShieldPercent = Shield / MaxShield;
+		SHUD->CharacterOverlay->ShieldBar->SetPercent(ShieldPercent);
+		FString ShieldText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Shield), FMath::CeilToInt(MaxShield));
+		SHUD->CharacterOverlay->ShieldText->SetText(FText::FromString(ShieldText));
+	}
+}
+
 void ASPlayerController::SetHUDScore(float Score)
 {
 	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;

@@ -30,6 +30,9 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerMoveBarrier();
 
+	UPROPERTY(EditAnywhere)
+	float InterpolationSpeed = 2.0f;
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayBarrierMoveAudio();
 

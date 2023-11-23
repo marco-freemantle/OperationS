@@ -45,6 +45,15 @@ void UCombatComponent::BeginPlay()
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
 		}
+
+		if (Character->HasAuthority())
+		{
+			AWeapon* SpawnedStartingWeapon = GetWorld()->SpawnActor<AWeapon>(StartingWeapon);
+			if (SpawnedStartingWeapon)
+			{
+				EquipWeapon(SpawnedStartingWeapon);
+			}
+		}
 	}
 }
 

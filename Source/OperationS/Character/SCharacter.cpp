@@ -19,6 +19,7 @@
 #include "OperationS/PlayerState/SPlayerState.h"
 #include "Components/SpotLightComponent.h"
 #include "Operations/Misc/Purchasable.h"
+#include "Operations/SComponents/BuffComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -43,6 +44,9 @@ ASCharacter::ASCharacter()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+
+	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
+	Buff->SetIsReplicated(true);
 
 
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
@@ -76,6 +80,7 @@ void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_CONDITION(ASCharacter, bHasJumped, COND_SimulatedOnly);
 	DOREPLIFETIME(ASCharacter, bIsSprinting);
 	DOREPLIFETIME(ASCharacter, Health);
+	DOREPLIFETIME(ASCharacter, Shield);
 }
 
 void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -105,6 +110,7 @@ void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	UpdateHUDShield();
 	UpdateHUDHealth();
 	if (HasAuthority())
 	{
@@ -114,6 +120,8 @@ void ASCharacter::BeginPlay()
 	{
 		AttachedGrenade->SetVisibility(false);
 	}
+	//Stops player having start upper body rotation (aim offset) on spawn
+	StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
 }
 
 void ASCharacter::Tick(float DeltaTime)
@@ -138,6 +146,13 @@ void ASCharacter::PostInitializeComponents()
 	if (Combat)
 	{
 		Combat->Character = this;
+	}
+	if (Buff)
+	{
+		Buff->Character = this;
+		Buff->InitialBaseSpeed = GetCharacterMovement()->MaxWalkSpeed;
+		Buff->InitialCrouchSpeed = GetCharacterMovement()->MaxWalkSpeedCrouched;
+		Buff->IntialJumpVelocity = GetCharacterMovement()->JumpZVelocity;
 	}
 }
 
@@ -479,9 +494,28 @@ void ASCharacter::GrenadeButtonPressed()
 
 void ASCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	if (bElimmed) return;
+
+	float DamageToHealth = Damage;
+	if (Shield > 0.f)
+	{
+		if (Shield >= Damage)
+		{
+			Shield = FMath::Clamp(Shield - Damage, 0.f, MaxShield);
+			DamageToHealth = 0.f;
+		}
+		else
+		{
+			Shield = 0.f;
+			DamageToHealth = FMath::Clamp(DamageToHealth - Shield, 0.f, Damage);
+		}
+	}
+
+	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
+
 	//PlayHitReactMontage();
 	UpdateHUDHealth();
+	UpdateHUDShield();
 
 	if (Health == 0.f)
 	{
@@ -510,7 +544,7 @@ void ASCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr) return;
 
-	FVector Velocity =GetVelocity();
+	FVector Velocity = GetVelocity();
 	Velocity.Z = 0.f;
 	float Speed = Velocity.Size();
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
@@ -636,10 +670,22 @@ void ASCharacter::OnRep_OverlappingPurchasable(APurchasable* LastPurchasable)
 	}
 }
 
-void ASCharacter::OnRep_Health()
+void ASCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	PlayHitReactMontage();
+	if (Health < LastHealth)
+	{
+		PlayHitReactMontage();
+	}
+}
+
+void ASCharacter::OnRep_Shield(float LastShield)
+{
+	UpdateHUDShield();
+	if (Shield < LastShield)
+	{
+		PlayHitReactMontage();
+	}
 }
 
 void ASCharacter::UpdateHUDHealth()
@@ -648,6 +694,15 @@ void ASCharacter::UpdateHUDHealth()
 	if (SPlayerController)
 	{
 		SPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ASCharacter::UpdateHUDShield()
+{
+	SPlayerController = SPlayerController == nullptr ? Cast<ASPlayerController>(Controller) : SPlayerController;
+	if (SPlayerController)
+	{
+		SPlayerController->SetHUDShield(Shield, MaxShield);
 	}
 }
 
