@@ -310,6 +310,7 @@ void ASCharacter::EquipButtonPressed()
 		if (HasAuthority())
 		{
 			Combat->EquipWeapon(OverlappingWeapon);
+
 		}
 		else
 		{

@@ -77,6 +77,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
 
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+
 	DropEquippedWeapon();
 
 	EquippedWeapon = WeaponToEquip;

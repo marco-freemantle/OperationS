@@ -46,6 +46,7 @@ public:
 
 	void FireButtonPressed(bool bPressed);
 
+	UFUNCTION(BlueprintCallable)
 	void Fire();
 
 	//HUD and Crosshairs
