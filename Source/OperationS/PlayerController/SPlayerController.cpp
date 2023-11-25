@@ -7,6 +7,9 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Operations/Character/SCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/Border.h"
+#include "Components/HorizontalBox.h"
 
 void ASPlayerController::BeginPlay()
 {
@@ -155,5 +158,59 @@ void ASPlayerController::ReceivedPlayer()
 	if (IsLocalController())
 	{
 		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
+	}
+}
+
+void ASPlayerController::PlayHitSound()
+{
+	UGameplayStatics::PlaySound2D(this, FleshHitSound, 5.f);
+}
+
+void ASPlayerController::ClientSetHUDImpactCrosshair_Implementation()
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->ImpactCrosshair && IsLocalController())
+	{
+		ImpactCrosshairTimerHandle.Invalidate();
+		SHUD->CharacterOverlay->ImpactCrosshair->SetVisibility(ESlateVisibility::Visible);
+
+		GetWorldTimerManager().SetTimer(ImpactCrosshairTimerHandle, [this]() {
+			//Set visibility to hidden after 1 seconds
+			if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->ImpactCrosshair)
+			{
+				SHUD->CharacterOverlay->ImpactCrosshair->SetVisibility(ESlateVisibility::Hidden);
+			}
+			}, 1.f, false);
+	}
+}
+
+void ASPlayerController::ClientSetHUDEliminated_Implementation(const FString& VictimName)
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->Eliminated)
+	{
+		EliminatedTimerHandle.Invalidate();
+
+		UHorizontalBox* Box = Cast<UHorizontalBox>(SHUD->CharacterOverlay->Eliminated->GetChildAt(0));
+		if (Box)
+		{
+			UTextBlock* VictimNameText = Cast<UTextBlock>(Box->GetChildAt(2));
+			if (VictimNameText)
+			{
+				VictimNameText->SetText(FText::FromString(VictimName));
+			}
+		}
+
+		SHUD->CharacterOverlay->Eliminated->SetVisibility(ESlateVisibility::Visible);
+
+		GetWorldTimerManager().SetTimer(EliminatedTimerHandle, [this]() {
+			//Set visibility to hidden after 3 second
+			if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->Eliminated)
+			{
+				SHUD->CharacterOverlay->Eliminated->SetVisibility(ESlateVisibility::Hidden);
+			}
+			}, 3.f, false);
 	}
 }

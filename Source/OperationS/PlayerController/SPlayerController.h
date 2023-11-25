@@ -18,6 +18,14 @@ public:
 	void SetHUDHealth(float Health, float MaxHealth);
 	void SetHUDShield(float Shield, float MaxShield);
 
+	FTimerHandle ImpactCrosshairTimerHandle;
+	UFUNCTION(Client, Reliable)
+	void ClientSetHUDImpactCrosshair();
+
+	FTimerHandle EliminatedTimerHandle;
+	UFUNCTION(Client, Reliable)
+	void ClientSetHUDEliminated(const FString& VictimName);
+
 	void SetHUDScore(float Score);
 
 	void SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity, FString WeaponName);
@@ -30,6 +38,11 @@ public:
 
 	virtual float GetServerTime(); //Synced with server world clock
 	virtual void ReceivedPlayer() override; //Sync with server clock as soon as possible
+
+	void PlayHitSound();
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* FleshHitSound;
 
 protected:
 	virtual void BeginPlay() override;

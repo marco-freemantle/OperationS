@@ -33,7 +33,7 @@ void AShotgun::Fire(const FVector& HitTarget)
 
 			bool bHitFlesh = (SCharacter || Zombie);
 
-			MulticastPlayHitEffects(bHitFlesh, SocketTransform);
+			MulticastPlayFireEffects(bHitFlesh, SocketTransform);
 
 			if (HasAuthority() && InstigatorController)
 			{

@@ -11,6 +11,7 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Operations/Weapon/WeaponTypes.h"
+#include "Operations/PlayerController/SPlayerController.h"
 
 void AHitScanWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -42,7 +43,9 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 		if (HasAuthority() && InstigatorController)
 		{
-			MulticastPlayHitEffects(bHitFlesh, SocketTransform);
+
+			MulticastPlayFireEffects(bHitFlesh, SocketTransform);
+
 			if (SCharacter)
 			{
 				UGameplayStatics::ApplyDamage(
@@ -113,7 +116,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 	}
 }
 
-void AHitScanWeapon::MulticastPlayHitEffects_Implementation(bool bFleshHit, FTransform SocketTransform)
+void AHitScanWeapon::MulticastPlayFireEffects_Implementation(bool bFleshHit, FTransform SocketTransform)
 {
 	if (BeamParticles)
 	{
@@ -143,18 +146,7 @@ void AHitScanWeapon::MulticastPlayHitEffects_Implementation(bool bFleshHit, FTra
 			GetActorLocation()
 		);
 	}
-	if (bFleshHit)
-	{
-		if (FleshImpactParticles)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FleshImpactParticles, FireHit.ImpactPoint);
-		}
-		if (FleshImpactSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, FleshImpactSound, FireHit.ImpactPoint);
-		}
-	}
-	else
+	if (!bFleshHit)
 	{
 		if (ImpactParticles)
 		{
@@ -163,6 +155,26 @@ void AHitScanWeapon::MulticastPlayHitEffects_Implementation(bool bFleshHit, FTra
 		if (ImpactSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, FireHit.ImpactPoint);
+		}
+	}
+	else
+	{
+		if (FleshImpactParticles)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FleshImpactParticles, FireHit.ImpactPoint);
+		}
+		if (FleshImpactSound)
+		{
+			ASCharacter* DamageCauser = Cast<ASCharacter>(GetOwner());
+			if (DamageCauser)
+			{
+				ASPlayerController* DamageCauserController = Cast<ASPlayerController>(DamageCauser->GetController());
+				if (DamageCauserController)
+				{
+					DamageCauserController->PlayHitSound();
+					DamageCauserController->ClientSetHUDImpactCrosshair();
+				}
+			}
 		}
 	}
 }

@@ -29,7 +29,7 @@ protected:
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastPlayHitEffects(bool bFleshHit, FTransform SocketTransform);
+	void MulticastPlayFireEffects(bool bFleshHit, FTransform SocketTransform);
 
 	UPROPERTY(Replicated)
 	FHitResult FireHit;

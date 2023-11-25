@@ -17,6 +17,10 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
 	{
 		AttackerPlayerState->AddToScore(100.f);
+
+
+		FString VictimSteamName = VictimController->PlayerState ? VictimController->PlayerState->GetPlayerName() : FString();
+		AttackerController->ClientSetHUDEliminated(VictimSteamName);
 	}
 
 	if (ElimmedCharacter)

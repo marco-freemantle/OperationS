@@ -151,6 +151,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ThrowGrenadeMontage;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* FleshHitSound;
+
 	UPROPERTY(Replicated)
 	bool bIsSprinting;
 

@@ -20,6 +20,7 @@
 #include "Components/SpotLightComponent.h"
 #include "Operations/Misc/Purchasable.h"
 #include "Operations/SComponents/BuffComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -677,6 +678,7 @@ void ASCharacter::OnRep_Health(float LastHealth)
 	if (Health < LastHealth)
 	{
 		PlayHitReactMontage();
+		UGameplayStatics::PlaySound2D(this, FleshHitSound, 5.f);
 	}
 }
 
@@ -686,6 +688,7 @@ void ASCharacter::OnRep_Shield(float LastShield)
 	if (Shield < LastShield)
 	{
 		PlayHitReactMontage();
+		UGameplayStatics::PlaySound2D(this, FleshHitSound, 5.f);
 	}
 }
 

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
+#include "Widgets/Layout/SBorder.h"
 #include "CharacterOverlay.generated.h"
 
 /**
@@ -42,4 +44,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MatchCountDownText;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* ImpactCrosshair;
+
+	UPROPERTY(meta = (BindWidget))
+	class UBorder* Eliminated;
 };
