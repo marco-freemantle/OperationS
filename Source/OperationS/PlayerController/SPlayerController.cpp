@@ -10,6 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/Border.h"
 #include "Components/HorizontalBox.h"
+#include "Components/VerticalBox.h"
+#include "Blueprint/WidgetTree.h"
 
 void ASPlayerController::BeginPlay()
 {
@@ -57,7 +59,7 @@ void ASPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	{
 		const float HealthPercent = Health / MaxHealth;
 		SHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
-		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+		FString HealthText = FString::Printf(TEXT("%d"), FMath::CeilToInt(Health));
 		SHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
 	}
 }
@@ -70,7 +72,7 @@ void ASPlayerController::SetHUDShield(float Shield, float MaxShield)
 	{
 		const float ShieldPercent = Shield / MaxShield;
 		SHUD->CharacterOverlay->ShieldBar->SetPercent(ShieldPercent);
-		FString ShieldText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Shield), FMath::CeilToInt(MaxShield));
+		FString ShieldText = FString::Printf(TEXT("%d"), FMath::CeilToInt(Shield));
 		SHUD->CharacterOverlay->ShieldText->SetText(FText::FromString(ShieldText));
 	}
 }
@@ -114,6 +116,41 @@ void ASPlayerController::SetHUDMatchCountDown(float CountDownTime)
 	}
 }
 
+void ASPlayerController::ClientSetHUDKillFeeds_Implementation(const FString& VictimName, const FString& AttackerName)
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->Killfeeds)
+	{
+		if (KillFeedItemClass)
+		{
+			//Create an instance of the Widget Blueprint
+			UUserWidget* KillFeedItemWidget = CreateWidget<UUserWidget>(this, KillFeedItemClass);
+
+			UWidgetTree* WidgetTree = KillFeedItemWidget->WidgetTree;
+
+			if (WidgetTree)
+			{
+				UTextBlock* AttackerTextBlock = WidgetTree->FindWidget<UTextBlock>(TEXT("AttackerText"));
+				UTextBlock* VictimTextBlock = WidgetTree->FindWidget<UTextBlock>(TEXT("VictimText"));
+
+				if (AttackerTextBlock && VictimTextBlock)
+				{
+					AttackerTextBlock->SetText(FText::FromString(AttackerName));
+					VictimTextBlock->SetText(FText::FromString(VictimName));
+					SHUD->CharacterOverlay->Killfeeds->AddChildToVerticalBox(KillFeedItemWidget);
+
+					FTimerHandle DestroyKillFeedItemTimerHandle;
+					GetWorldTimerManager().SetTimer(DestroyKillFeedItemTimerHandle, [KillFeedItemWidget]() {
+						//Destroy widget after 5 seconds
+						KillFeedItemWidget->RemoveFromParent();
+						}, 4.f, false);
+				}
+			}
+		}
+	}
+}
+
 void ASPlayerController::SetHUDTime()
 {
 	uint32 SecondsLeft = FMath::CeilToInt(MatchTime - GetServerTime());
@@ -125,6 +162,8 @@ void ASPlayerController::SetHUDTime()
 
 	CountDownInt = SecondsLeft;
 }
+
+
 
 void ASPlayerController::ServerRequestServerTime_Implementation(float TimeOfClientRequest)
 {

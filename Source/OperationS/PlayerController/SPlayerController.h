@@ -32,6 +32,9 @@ public:
 
 	void SetHUDMatchCountDown(float CountDownTime);
 
+	UFUNCTION(Client, Reliable)
+	void ClientSetHUDKillFeeds(const FString& VictimName, const FString& AttackerName);
+
 	virtual void OnPossess(APawn* InPawn) override;
 
 	virtual void Tick(float DeltaTime) override;
@@ -43,6 +46,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* FleshHitSound;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UUserWidget> KillFeedItemClass;
 
 protected:
 	virtual void BeginPlay() override;

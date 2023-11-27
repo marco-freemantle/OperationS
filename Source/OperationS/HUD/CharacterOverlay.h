@@ -50,4 +50,7 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UBorder* Eliminated;
+
+	UPROPERTY(meta = (BindWidget))
+	class UVerticalBox* Killfeeds;
 };

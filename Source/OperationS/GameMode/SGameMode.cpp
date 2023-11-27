@@ -18,9 +18,23 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 	{
 		AttackerPlayerState->AddToScore(100.f);
 
-
 		FString VictimSteamName = VictimController->PlayerState ? VictimController->PlayerState->GetPlayerName() : FString();
+		FString AttackerSteamName = AttackerController->PlayerState ? AttackerController->PlayerState->GetPlayerName() : FString();
 		AttackerController->ClientSetHUDEliminated(VictimSteamName);
+
+		//Get all player controllers and update KillFeed
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			APlayerController* PlayerController = It->Get();
+			if (PlayerController)
+			{
+				ASPlayerController* IndexedController = Cast<ASPlayerController>(PlayerController);
+				if (IndexedController)
+				{
+					IndexedController->ClientSetHUDKillFeeds(VictimSteamName, AttackerSteamName);
+				}
+			}
+		}
 	}
 
 	if (ElimmedCharacter)
