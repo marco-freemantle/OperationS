@@ -28,6 +28,7 @@ public:
 	TSubclassOf<class AWeapon> StartingWeapon;
 
 	void EquipWeapon(AWeapon* WeaponToEquip);
+	void SwapWeapons();
 
 	class ASCharacter* Character;
 
@@ -38,11 +39,17 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
 
-	UPROPERTY(Replicated)
-	bool bAiming;
-
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+
+	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
+
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
+
+	UPROPERTY(Replicated)
+	bool bAiming;
 
 	void FireButtonPressed(bool bPressed);
 
@@ -94,6 +101,9 @@ public:
 	UFUNCTION()
 	void OnRep_CombatState();
 
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
 
@@ -143,6 +153,10 @@ protected:
 	void DropEquippedWeapon();
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
-	void PlayEquipWeaponSound();
+	void AttachActorToBackpack(AActor* ActorToAttach);
+	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
 	void ShowAttachedGrenade(bool bShowGrenade);
+
+public:
+	bool ShouldSwapWeapons();
 };

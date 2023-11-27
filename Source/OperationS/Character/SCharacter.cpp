@@ -222,6 +222,11 @@ void ASCharacter::Elim()
 	if (Combat && Combat->EquippedWeapon)
 	{
 		Combat->EquippedWeapon->Dropped();
+
+		if (Combat->SecondaryWeapon)
+		{
+			Combat->SecondaryWeapon->Dropped();
+		}
 	}
 	GetWorldTimerManager().SetTimer(ElimTimer, this, &ASCharacter::ElimTimerFinished, ElimDelay);
 }
@@ -308,39 +313,26 @@ void ASCharacter::EquipButtonPressed()
 	//Equip Weapon
 	if (Combat)
 	{
-		if (HasAuthority())
-		{
-			Combat->EquipWeapon(OverlappingWeapon);
-
-		}
-		else
-		{
-			ServerEquipButtonPressed();
-		}
-	}
-	//Purchase overlapping purchasable
-	if (OverlappingPurchasable)
-	{
-		if (HasAuthority())
-		{
-			ASPlayerState* ThisPlayerState = SPlayerState ? Cast<ASPlayerState>(GetController()->PlayerState) : nullptr;
-			if (SPlayerState)
-			{
-				OverlappingPurchasable->MakePurchase(ThisPlayerState);
-			}
-		}
+		ServerEquipButtonPressed();
 	}
 }
 
 void ASCharacter::ServerEquipButtonPressed_Implementation()
 {
 	//Equip Weapon
-	if (Combat && HasAuthority())
+	if (Combat)
 	{
-		Combat->EquipWeapon(OverlappingWeapon);
+		if (OverlappingWeapon)
+		{
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else if (Combat->ShouldSwapWeapons())
+		{
+			Combat->SwapWeapons();
+		}
 	}
 	//Purchase overlapping purchasable
-	if (OverlappingPurchasable && HasAuthority())
+	if (OverlappingPurchasable)
 	{
 		ASPlayerState* ThisPlayerState = SPlayerState ? Cast<ASPlayerState>(GetController()->PlayerState) : nullptr;
 		if (ThisPlayerState)
@@ -515,6 +507,9 @@ void ASCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 
 	Health = FMath::Clamp(Health - DamageToHealth, 0.f, MaxHealth);
 
+	//Play hit received sound effect
+	UGameplayStatics::PlaySound2D(this, FleshHitSound, 2.f);
+
 	//PlayHitReactMontage();
 	UpdateHUDHealth();
 	UpdateHUDShield();
@@ -677,8 +672,8 @@ void ASCharacter::OnRep_Health(float LastHealth)
 	UpdateHUDHealth();
 	if (Health < LastHealth)
 	{
-		PlayHitReactMontage();
-		UGameplayStatics::PlaySound2D(this, FleshHitSound, 5.f);
+		//PlayHitReactMontage();
+		UGameplayStatics::PlaySound2D(this, FleshHitSound, 2.f);
 	}
 }
 
@@ -687,8 +682,8 @@ void ASCharacter::OnRep_Shield(float LastShield)
 	UpdateHUDShield();
 	if (Shield < LastShield)
 	{
-		PlayHitReactMontage();
-		UGameplayStatics::PlaySound2D(this, FleshHitSound, 5.f);
+		//PlayHitReactMontage();
+		UGameplayStatics::PlaySound2D(this, FleshHitSound, 2.f);
 	}
 }
 

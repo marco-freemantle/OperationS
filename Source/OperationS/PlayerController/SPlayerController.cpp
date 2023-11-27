@@ -163,7 +163,7 @@ void ASPlayerController::ReceivedPlayer()
 
 void ASPlayerController::PlayHitSound()
 {
-	UGameplayStatics::PlaySound2D(this, FleshHitSound, 5.f);
+	UGameplayStatics::PlaySound2D(this, FleshHitSound, 1.f);
 }
 
 void ASPlayerController::ClientSetHUDImpactCrosshair_Implementation()
@@ -172,16 +172,16 @@ void ASPlayerController::ClientSetHUDImpactCrosshair_Implementation()
 
 	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->ImpactCrosshair && IsLocalController())
 	{
-		ImpactCrosshairTimerHandle.Invalidate();
+		GetWorldTimerManager().ClearTimer(ImpactCrosshairTimerHandle);
 		SHUD->CharacterOverlay->ImpactCrosshair->SetVisibility(ESlateVisibility::Visible);
 
 		GetWorldTimerManager().SetTimer(ImpactCrosshairTimerHandle, [this]() {
-			//Set visibility to hidden after 1 seconds
+			//Set visibility to hidden after 0.75 seconds
 			if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->ImpactCrosshair)
 			{
 				SHUD->CharacterOverlay->ImpactCrosshair->SetVisibility(ESlateVisibility::Hidden);
 			}
-			}, 1.f, false);
+			}, 0.75f, false);
 	}
 }
 
@@ -191,7 +191,7 @@ void ASPlayerController::ClientSetHUDEliminated_Implementation(const FString& Vi
 
 	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->Eliminated)
 	{
-		EliminatedTimerHandle.Invalidate();
+		GetWorldTimerManager().ClearTimer(EliminatedTimerHandle);
 
 		UHorizontalBox* Box = Cast<UHorizontalBox>(SHUD->CharacterOverlay->Eliminated->GetChildAt(0));
 		if (Box)

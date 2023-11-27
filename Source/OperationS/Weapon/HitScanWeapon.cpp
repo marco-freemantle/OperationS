@@ -171,6 +171,7 @@ void AHitScanWeapon::MulticastPlayFireEffects_Implementation(bool bFleshHit, FTr
 				ASPlayerController* DamageCauserController = Cast<ASPlayerController>(DamageCauser->GetController());
 				if (DamageCauserController)
 				{
+					//Playing hit sound for player who has damaged enemy
 					DamageCauserController->PlayHitSound();
 					DamageCauserController->ClientSetHUDImpactCrosshair();
 				}
