@@ -88,17 +88,17 @@ void ASPlayerController::SetHUDScore(float Score)
 	}
 }
 
-void ASPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity, FString WeaponName)
+void ASPlayerController::SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity, UTexture2D* WeaponImage)
 {
 	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
 
-	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->WeaponAmmoAmount && SHUD->CharacterOverlay->WeaponAmmoLimit && SHUD->CharacterOverlay->WeaponNameText)
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->WeaponAmmoAmount && SHUD->CharacterOverlay->WeaponAmmoLimit && SHUD->CharacterOverlay->WeaponTexture)
 	{
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		FString AmmoTextLimit = FString::Printf(TEXT("%d"), MagCapacity);
 		SHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
 		SHUD->CharacterOverlay->WeaponAmmoLimit->SetText(FText::FromString(AmmoTextLimit));
-		SHUD->CharacterOverlay->WeaponNameText->SetText(FText::FromString(WeaponName));
+		SHUD->CharacterOverlay->WeaponTexture->SetBrushFromTexture(WeaponImage);
 	}
 }
 
@@ -116,7 +116,7 @@ void ASPlayerController::SetHUDMatchCountDown(float CountDownTime)
 	}
 }
 
-void ASPlayerController::ClientSetHUDKillFeeds_Implementation(const FString& VictimName, const FString& AttackerName)
+void ASPlayerController::ClientSetHUDKillFeeds_Implementation(const FString& VictimName, const FString& AttackerName, UTexture2D* WeaponImage)
 {
 	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
 
@@ -133,11 +133,13 @@ void ASPlayerController::ClientSetHUDKillFeeds_Implementation(const FString& Vic
 			{
 				UTextBlock* AttackerTextBlock = WidgetTree->FindWidget<UTextBlock>(TEXT("AttackerText"));
 				UTextBlock* VictimTextBlock = WidgetTree->FindWidget<UTextBlock>(TEXT("VictimText"));
+				UImage* WeaponImageBlock = WidgetTree->FindWidget<UImage>(TEXT("KillWeaponImage"));
 
-				if (AttackerTextBlock && VictimTextBlock)
+				if (AttackerTextBlock && VictimTextBlock && WeaponImageBlock)
 				{
 					AttackerTextBlock->SetText(FText::FromString(AttackerName));
 					VictimTextBlock->SetText(FText::FromString(VictimName));
+					WeaponImageBlock->SetBrushFromTexture(WeaponImage);
 					SHUD->CharacterOverlay->Killfeeds->AddChildToVerticalBox(KillFeedItemWidget);
 
 					FTimerHandle DestroyKillFeedItemTimerHandle;

@@ -15,7 +15,7 @@ class OPERATIONS_API ASGameMode : public AGameMode
 	GENERATED_BODY()
 	
 public:
-	virtual void PlayerEliminated(class ASCharacter* ElimmedCharacter, class ASPlayerController* VictimController, ASPlayerController* AttackerController);
+	virtual void PlayerEliminated(class ASCharacter* ElimmedCharacter, class ASPlayerController* VictimController, ASPlayerController* AttackerController, AActor* DamageCauser);
 	virtual void ZombieEliminated(class ASZombie* ElimmedCharacter, class ASZombieAIController* VictimController, ASPlayerController* AttackerController);
 	virtual void RequestRespawn(ACharacter* ElimmedCharacter, AController* ElimmedController);
 };

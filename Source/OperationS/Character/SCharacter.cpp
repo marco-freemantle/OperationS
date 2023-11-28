@@ -90,6 +90,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ASCharacter::EquipButtonPressed);
+	PlayerInputComponent->BindAction("SwapWeapon", IE_Pressed, this, &ASCharacter::SwapWeaponButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ASCharacter::CrouchButtonPressed);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ASCharacter::ReloadButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ASCharacter::AimButtonPressed);
@@ -233,10 +234,10 @@ void ASCharacter::Elim()
 
 void ASCharacter::MulticastElim_Implementation()
 {
-	if (SPlayerController)
+	/*if (SPlayerController)
 	{
-		SPlayerController->SetHUDWeaponAmmo(0, 0, FString("No Weapon"));
-	}
+		SPlayerController->SetHUDWeaponAmmo(0, 0, UTexture);
+	}*/
 	bElimmed = true;
 
 	//Disable any character movement
@@ -326,10 +327,10 @@ void ASCharacter::ServerEquipButtonPressed_Implementation()
 		{
 			Combat->EquipWeapon(OverlappingWeapon);
 		}
-		else if (Combat->ShouldSwapWeapons())
+		/*else if (Combat->ShouldSwapWeapons())
 		{
 			Combat->SwapWeapons();
-		}
+		}*/
 	}
 	//Purchase overlapping purchasable
 	if (OverlappingPurchasable)
@@ -338,6 +339,25 @@ void ASCharacter::ServerEquipButtonPressed_Implementation()
 		if (ThisPlayerState)
 		{
 			OverlappingPurchasable->MakePurchase(ThisPlayerState);
+		}
+	}
+}
+
+void ASCharacter::SwapWeaponButtonPressed()
+{
+	if (Combat)
+	{
+		ServerSwapWeaponButtonPressed();
+	}
+}
+
+void ASCharacter::ServerSwapWeaponButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		if(Combat->ShouldSwapWeapons())
+		{
+			Combat->SwapWeapons();
 		}
 	}
 }
@@ -521,7 +541,7 @@ void ASCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamag
 		{
 			SPlayerController = SPlayerController == nullptr ? Cast<ASPlayerController>(Controller) : SPlayerController;
 			ASPlayerController* AttackerController = Cast<ASPlayerController>(InstigatorController);
-			SGameMode->PlayerEliminated(this, SPlayerController, AttackerController);
+			SGameMode->PlayerEliminated(this, SPlayerController, AttackerController, DamageCauser);
 		}
 	}
 }

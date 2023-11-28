@@ -139,7 +139,7 @@ void AWeapon::SetHUDAmmo()
 		SOwnerController = SOwnerController == nullptr ? Cast<ASPlayerController>(SOwnerCharacter->Controller) : SOwnerController;
 		if (SOwnerController)
 		{
-			SOwnerController->SetHUDWeaponAmmo(Ammo, MagCapacity, WeaponName);
+			SOwnerController->SetHUDWeaponAmmo(Ammo, MagCapacity, WeaponImage);
 		}
 	}
 }
@@ -176,10 +176,6 @@ void AWeapon::OnRep_Owner()
 	{
 		SOwnerCharacter = nullptr;
 		SOwnerController = nullptr;
-	}
-	else
-	{
-		SetHUDAmmo();
 	}
 }
 

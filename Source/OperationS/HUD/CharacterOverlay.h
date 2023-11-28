@@ -40,7 +40,7 @@ public:
 	UTextBlock* WeaponAmmoLimit;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* WeaponNameText;
+	class UImage* WeaponTexture;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MatchCountDownText;

@@ -28,12 +28,12 @@ public:
 
 	void SetHUDScore(float Score);
 
-	void SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity, FString WeaponName);
+	void SetHUDWeaponAmmo(int32 Ammo, int32 MagCapacity, UTexture2D* WeaponImage);
 
 	void SetHUDMatchCountDown(float CountDownTime);
 
 	UFUNCTION(Client, Reliable)
-	void ClientSetHUDKillFeeds(const FString& VictimName, const FString& AttackerName);
+	void ClientSetHUDKillFeeds(const FString& VictimName, const FString& AttackerName, UTexture2D* WeaponImage);
 
 	virtual void OnPossess(APawn* InPawn) override;
 

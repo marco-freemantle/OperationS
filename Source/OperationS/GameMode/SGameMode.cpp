@@ -8,8 +8,9 @@
 #include "GameFramework/PlayerStart.h"
 #include "OperationS/PlayerState/SPlayerState.h"
 #include "Operations/AI/SZombieAIController.h"
+#include "Operations/Weapon/Weapon.h"
 
-void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerController* VictimController, ASPlayerController* AttackerController)
+void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerController* VictimController, ASPlayerController* AttackerController, AActor* DamageCauser)
 {
 	ASPlayerState* AttackerPlayerState = AttackerController ? Cast<ASPlayerState>(AttackerController->PlayerState) : nullptr;
 	ASPlayerState* VictimPlayerState = VictimController ? Cast<ASPlayerState>(VictimController->PlayerState) : nullptr;
@@ -20,6 +21,7 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 
 		FString VictimSteamName = VictimController->PlayerState ? VictimController->PlayerState->GetPlayerName() : FString();
 		FString AttackerSteamName = AttackerController->PlayerState ? AttackerController->PlayerState->GetPlayerName() : FString();
+		AWeapon* WeaponThatKilled = Cast<AWeapon>(DamageCauser);
 		AttackerController->ClientSetHUDEliminated(VictimSteamName);
 
 		//Get all player controllers and update KillFeed
@@ -29,9 +31,9 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 			if (PlayerController)
 			{
 				ASPlayerController* IndexedController = Cast<ASPlayerController>(PlayerController);
-				if (IndexedController)
+				if (IndexedController && WeaponThatKilled)
 				{
-					IndexedController->ClientSetHUDKillFeeds(VictimSteamName, AttackerSteamName);
+					IndexedController->ClientSetHUDKillFeeds(VictimSteamName, AttackerSteamName, WeaponThatKilled->WeaponImage);
 				}
 			}
 		}

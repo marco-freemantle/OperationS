@@ -31,6 +31,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	FString WeaponName;
 
+	UPROPERTY(EditAnywhere)
+	UTexture2D* WeaponImage;
+
 	void ShowPickupWidget(bool bShowWidget);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
