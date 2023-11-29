@@ -42,10 +42,13 @@ public:
 	virtual float GetServerTime(); //Synced with server world clock
 	virtual void ReceivedPlayer() override; //Sync with server clock as soon as possible
 
-	void PlayHitSound();
+	void PlayHitSound(bool bDidGetHeadshot);
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* FleshHitSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* HeadshotHitSound;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> KillFeedItemClass;

@@ -217,6 +217,15 @@ void ASCharacter::PlayThrowGrenadeMontage()
 	}
 }
 
+void ASCharacter::PlaySwapMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && SwapMontage)
+	{
+		AnimInstance->Montage_Play(SwapMontage);
+	}
+}
+
 void ASCharacter::Elim()
 {
 	MulticastElim();
@@ -327,10 +336,6 @@ void ASCharacter::ServerEquipButtonPressed_Implementation()
 		{
 			Combat->EquipWeapon(OverlappingWeapon);
 		}
-		/*else if (Combat->ShouldSwapWeapons())
-		{
-			Combat->SwapWeapons();
-		}*/
 	}
 	//Purchase overlapping purchasable
 	if (OverlappingPurchasable)
@@ -347,7 +352,12 @@ void ASCharacter::SwapWeaponButtonPressed()
 {
 	if (Combat)
 	{
-		ServerSwapWeaponButtonPressed();
+		if(Combat->CombatState == ECombatState::ECS_Unoccupied) ServerSwapWeaponButtonPressed();
+		if (Combat->ShouldSwapWeapons() && !HasAuthority() && Combat->CombatState == ECombatState::ECS_Unoccupied)
+		{
+			PlaySwapMontage();
+			Combat->CombatState = ECombatState::ECS_SwappingWeapons;
+		}
 	}
 }
 

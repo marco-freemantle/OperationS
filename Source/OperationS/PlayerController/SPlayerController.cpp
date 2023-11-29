@@ -202,9 +202,16 @@ void ASPlayerController::ReceivedPlayer()
 	}
 }
 
-void ASPlayerController::PlayHitSound()
+void ASPlayerController::PlayHitSound(bool bDidGetHeadshot)
 {
-	UGameplayStatics::PlaySound2D(this, FleshHitSound, 1.f);
+	if (!bDidGetHeadshot && FleshHitSound)
+	{
+		UGameplayStatics::PlaySound2D(this, FleshHitSound, 1.f);
+	}
+	if (bDidGetHeadshot && HeadshotHitSound)
+	{
+		UGameplayStatics::PlaySound2D(this, HeadshotHitSound, 1.f);
+	}
 }
 
 void ASPlayerController::ClientSetHUDImpactCrosshair_Implementation()

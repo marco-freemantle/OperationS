@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Damage = 20.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HeadShotDamage = 40.f;
+
 protected:
 
 	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
@@ -29,7 +32,7 @@ protected:
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastPlayFireEffects(bool bFleshHit, FTransform SocketTransform);
+	void MulticastPlayFireEffects(bool bFleshHit, FTransform SocketTransform, bool bDidGetHeadshot);
 
 	UPROPERTY(Replicated)
 	FHitResult FireHit;

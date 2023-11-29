@@ -26,6 +26,11 @@ void APurchasableBarrier::MakePurchase(ASPlayerState* PlayerState)
     if (bCanAffordPurchase)
     {   
         bShouldMove = true;
+        //Stop query and hide pickupwidget
+        AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+        PickupWidget->SetVisibility(false);
+
         MulticastPlayBarrierMoveAudio();
     }
 }
@@ -50,10 +55,5 @@ void APurchasableBarrier::ServerMoveBarrier_Implementation()
     if (CurrentLocation == DesiredBarrierLocation)
     {
         bShouldMove = false;
-
-        //Stop query and hide pickupwidget
-        AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-        PickupWidget->SetVisibility(false);
     }
 }

@@ -43,14 +43,15 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 		if (HasAuthority() && InstigatorController)
 		{
+			bool bDidGetHeadshot = FireHit.BoneName.ToString() == FString("head") || FireHit.BoneName.ToString() == FString("Head");
+			MulticastPlayFireEffects(bHitFlesh, SocketTransform, bDidGetHeadshot);
 
-			MulticastPlayFireEffects(bHitFlesh, SocketTransform);
-
+			float DamageToCause = bDidGetHeadshot ? HeadShotDamage : Damage;
 			if (SCharacter)
 			{
 				UGameplayStatics::ApplyDamage(
 					SCharacter,
-					Damage,
+					DamageToCause,
 					InstigatorController,
 					this,
 					UDamageType::StaticClass()
@@ -99,6 +100,10 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		{
 			BeamEnd = OutHit.ImpactPoint;
 		}
+		else
+		{
+			OutHit.ImpactPoint = End;
+		}
 		if (BeamParticles)
 		{
 			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
@@ -116,7 +121,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 	}
 }
 
-void AHitScanWeapon::MulticastPlayFireEffects_Implementation(bool bFleshHit, FTransform SocketTransform)
+void AHitScanWeapon::MulticastPlayFireEffects_Implementation(bool bFleshHit, FTransform SocketTransform, bool bDidGetHeadshot)
 {
 	if (BeamParticles)
 	{
@@ -172,7 +177,7 @@ void AHitScanWeapon::MulticastPlayFireEffects_Implementation(bool bFleshHit, FTr
 				if (DamageCauserController)
 				{
 					//Playing hit sound for player who has damaged enemy
-					DamageCauserController->PlayHitSound();
+					DamageCauserController->PlayHitSound(bDidGetHeadshot);
 					DamageCauserController->ClientSetHUDImpactCrosshair();
 				}
 			}

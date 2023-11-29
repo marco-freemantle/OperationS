@@ -26,7 +26,7 @@ public:
 	UMultiplayerSessionsSubsystem();
 
 	//To handle session functionality. The Menu class will call these
-	void CreateSession(int32 NumPublicConnections, FString MatchType);
+	void CreateSession(int32 NumPublicConnections, FString MatchType, FString SessionName);
 	void FindSessions(int32 MaxSearchResults);
 	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
 	void DestroySession();
@@ -69,4 +69,5 @@ private:
 	bool bCreateSessionOnDestroy{ false };
 	int32 LastNumPublicConnections;
 	FString LastMatchType;
+	FString LastSessionName;
 };

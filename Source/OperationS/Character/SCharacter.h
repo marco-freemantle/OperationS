@@ -38,6 +38,8 @@ public:
 
 	void PlayThrowGrenadeMontage();
 
+	void PlaySwapMontage();
+
 	void Elim();
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -154,6 +156,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ThrowGrenadeMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* SwapMontage;
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* FleshHitSound;
