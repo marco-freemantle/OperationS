@@ -26,6 +26,8 @@ public:
 	UFUNCTION()
 	void OnRep_PlayerScore();
 
+	FORCEINLINE int GetPlayerScore() const { return PlayerScore; }
+
 private:
 
 	class ASCharacter* Character;

@@ -4,14 +4,18 @@
 #include "SPlayerController.h"
 #include "Operations/HUD/SHUD.h"
 #include "Operations/HUD/CharacterOverlay.h"
+#include "Operations/HUD/CharacterScoreboard.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Operations/Character/SCharacter.h"
+#include "Operations/PlayerState/SPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Border.h"
 #include "Components/HorizontalBox.h"
 #include "Components/VerticalBox.h"
 #include "Blueprint/WidgetTree.h"
+#include "GameFramework/PlayerState.h"
+#include "Operations/GameMode/SGameMode.h"
 
 void ASPlayerController::BeginPlay()
 {
@@ -262,3 +266,66 @@ void ASPlayerController::ClientSetHUDEliminated_Implementation(const FString& Vi
 			}, 3.f, false);
 	}
 }
+
+void ASPlayerController::ClientUpdateScoreboard_Implementation(const TArray<FPlayerInfo>& PlayerInfoArray)
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterScoreboard)
+	{
+		// Clear existing items from the scoreboard
+		SHUD->CharacterScoreboard->ScoreList->ClearChildren();
+
+		for (const FPlayerInfo& PlayerInfo : PlayerInfoArray)
+		{
+			FString DisplayName = PlayerInfo.DisplayName;
+
+			if (ScoreboardItemClass)
+			{
+				// Create an instance of the Widget Blueprint
+				UUserWidget* ScoreboardItemWidget = CreateWidget<UUserWidget>(this, ScoreboardItemClass);
+
+				UWidgetTree* WidgetTree = ScoreboardItemWidget->WidgetTree;
+
+				if (WidgetTree)
+				{
+					UTextBlock* PlayerNameText = WidgetTree->FindWidget<UTextBlock>(TEXT("PlayerNameText"));
+					UTextBlock* PlayerScoreText = WidgetTree->FindWidget<UTextBlock>(TEXT("PlayerScoreText"));
+					UTextBlock* PlayerElimsText = WidgetTree->FindWidget<UTextBlock>(TEXT("PlayerElimsText"));
+
+					if (PlayerNameText && PlayerScoreText && PlayerElimsText)
+					{
+						PlayerNameText->SetText(FText::FromString(DisplayName));
+						// Assuming ScoreText and KillsText are members of FPlayerInfo
+						PlayerScoreText->SetText(FText::FromString(PlayerInfo.ScoreText));
+						PlayerElimsText->SetText(FText::FromString(PlayerInfo.KillsText));
+
+						SHUD->CharacterScoreboard->ScoreList->AddChild(ScoreboardItemWidget);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void ASPlayerController::ToggleScoreboard()
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterScoreboard)
+	{
+		bIsScoreboardOpen = !bIsScoreboardOpen;
+
+		if (bIsScoreboardOpen)
+		{
+			SHUD->CharacterScoreboard->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			SHUD->CharacterScoreboard->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+

@@ -33,6 +33,14 @@ public:
 	void SetHUDMatchCountDown(float CountDownTime);
 
 	UFUNCTION(Client, Reliable)
+	void ClientUpdateScoreboard(const TArray<FPlayerInfo>& PlayerInfoArray);
+
+	void ToggleScoreboard();
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UUserWidget> ScoreboardItemClass;
+	bool bIsScoreboardOpen = false;
+
+	UFUNCTION(Client, Reliable)
 	void ClientSetHUDKillFeeds(const FString& VictimName, const FString& AttackerName, UTexture2D* WeaponImage);
 
 	virtual void OnPossess(APawn* InPawn) override;

@@ -10,6 +10,38 @@
 #include "Operations/AI/SZombieAIController.h"
 #include "Operations/Weapon/Weapon.h"
 
+void ASGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	
+	ASPlayerController* NewController = Cast<ASPlayerController>(NewPlayer);
+	if (NewController)
+	{
+		ConnectedControllers.Add(NewController);
+		PlayerInfoArray.Empty();
+		for (ASPlayerController* PlayerController : ConnectedControllers)
+		{
+			FPlayerInfo NewPlayerInfo;
+			NewPlayerInfo.DisplayName = PlayerController->PlayerState ? PlayerController->PlayerState->GetPlayerName() : "Unknown";
+			NewPlayerInfo.ScoreText = PlayerController->PlayerState ? FString::Printf(TEXT("%d"), Cast<ASPlayerState>(PlayerController->PlayerState)->GetPlayerScore()) : FString(TEXT("N/A"));
+			NewPlayerInfo.KillsText = FString::Printf(TEXT("0"));
+			PlayerInfoArray.Add(NewPlayerInfo);
+		}
+
+		FTimerHandle UpateScoreboardTimerHandle;
+
+		//Update scoreboard after 1 second (this allows update for clients, god knows why)
+		GetWorldTimerManager().SetTimer(UpateScoreboardTimerHandle, [this]() {
+			for (ASPlayerController* PlayerController : ConnectedControllers)
+			{
+				PlayerController->ClientUpdateScoreboard(PlayerInfoArray);
+			}
+			}, 1.f, false);
+
+
+	}
+}
+
 void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerController* VictimController, ASPlayerController* AttackerController, AActor* DamageCauser)
 {
 	ASPlayerState* AttackerPlayerState = AttackerController ? Cast<ASPlayerState>(AttackerController->PlayerState) : nullptr;

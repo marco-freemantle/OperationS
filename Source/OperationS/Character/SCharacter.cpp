@@ -101,6 +101,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintButtonReleased);
 	PlayerInputComponent->BindAction("ToggleLight", IE_Pressed, this, &ASCharacter::ToggleLightButtonPressed);
 	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ASCharacter::GrenadeButtonPressed);
+	PlayerInputComponent->BindAction("ToggleScoreboard", IE_Pressed, this, &ASCharacter::ToggleScoreboardButtonPressed);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
@@ -513,6 +514,15 @@ void ASCharacter::GrenadeButtonPressed()
 	if (Combat)
 	{
 		Combat->ThrowGrenade();
+	}
+}
+
+void ASCharacter::ToggleScoreboardButtonPressed()
+{
+	SPlayerController = SPlayerController == nullptr ? Cast<ASPlayerController>(Controller) : SPlayerController;
+	if (SPlayerController)
+	{
+		SPlayerController->ToggleScoreboard();
 	}
 }
 

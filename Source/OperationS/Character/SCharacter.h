@@ -74,6 +74,7 @@ protected:
 	void SprintButtonReleased();
 	void ToggleLightButtonPressed();
 	void GrenadeButtonPressed();
+	void ToggleScoreboardButtonPressed();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);

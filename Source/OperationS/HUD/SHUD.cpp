@@ -4,6 +4,7 @@
 #include "SHUD.h"
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
+#include "CharacterScoreboard.h"
 
 void ASHUD::DrawHUD()
 {
@@ -50,6 +51,7 @@ void ASHUD::BeginPlay()
 	Super::BeginPlay();
 
 	AddCharacterOverlay();
+	AddCharacterScoreboard();
 }
 
 void ASHUD::AddCharacterOverlay()
@@ -60,6 +62,18 @@ void ASHUD::AddCharacterOverlay()
 	{
 		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
+	}
+}
+
+void ASHUD::AddCharacterScoreboard()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+
+	if (PlayerController && CharacterScoreboardClass)
+	{
+		CharacterScoreboard = CreateWidget<UCharacterScoreboard>(PlayerController, CharacterScoreboardClass);
+		CharacterScoreboard->AddToViewport();
+		CharacterScoreboard->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
