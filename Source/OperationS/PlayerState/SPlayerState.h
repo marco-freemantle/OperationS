@@ -26,7 +26,13 @@ public:
 	UFUNCTION()
 	void OnRep_PlayerScore();
 
+	void AddToKills();
+
+	UPROPERTY(Replicated, BlueprintReadWrite)
+	float PlayerKills;
+
 	FORCEINLINE int GetPlayerScore() const { return PlayerScore; }
+	FORCEINLINE int GetPlayerkills() const { return PlayerKills; }
 
 private:
 

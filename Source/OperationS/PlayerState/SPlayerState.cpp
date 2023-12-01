@@ -11,6 +11,7 @@ void ASPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASPlayerState, PlayerScore);
+	DOREPLIFETIME(ASPlayerState, PlayerKills);
 }
 
 void ASPlayerState::AddToScore(float ScoreAmount)
@@ -28,15 +29,7 @@ void ASPlayerState::AddToScore(float ScoreAmount)
 	}
 }
 
-void ASPlayerState::OnRep_PlayerScore()
+void ASPlayerState::AddToKills()
 {
-	Character = Character == nullptr ? Cast<ASCharacter>(GetPawn()) : Character;
-	if (Character)
-	{
-		Controller = Controller == nullptr ? Cast<ASPlayerController>(Character->Controller) : Controller;
-		if (Controller)
-		{
-			Controller->SetHUDScore(PlayerScore);
-		}
-	}
+	PlayerKills = PlayerKills + 1;
 }

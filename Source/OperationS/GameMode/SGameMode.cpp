@@ -18,28 +18,31 @@ void ASGameMode::PostLogin(APlayerController* NewPlayer)
 	if (NewController)
 	{
 		ConnectedControllers.Add(NewController);
-		PlayerInfoArray.Empty();
+		UpdateScoreboards();
+	}
+}
+
+void ASGameMode::UpdateScoreboards()
+{
+	PlayerInfoArray.Empty();
+	for (ASPlayerController* PlayerController : ConnectedControllers)
+	{
+		FPlayerInfo NewPlayerInfo;
+		NewPlayerInfo.DisplayName = PlayerController->PlayerState ? PlayerController->PlayerState->GetPlayerName() : "Unknown";
+		NewPlayerInfo.ScoreText = PlayerController->PlayerState ? FString::Printf(TEXT("%d"), Cast<ASPlayerState>(PlayerController->PlayerState)->GetPlayerScore()) : FString(TEXT("N/A"));
+		NewPlayerInfo.KillsText = PlayerController->PlayerState ? FString::Printf(TEXT("%d"), Cast<ASPlayerState>(PlayerController->PlayerState)->GetPlayerkills()) : FString(TEXT("N/A"));
+		PlayerInfoArray.Add(NewPlayerInfo);
+	}
+
+	FTimerHandle UpateScoreboardTimerHandle;
+
+	//Update scoreboard after 1 second (this allows update for clients, god knows why)
+	GetWorldTimerManager().SetTimer(UpateScoreboardTimerHandle, [this]() {
 		for (ASPlayerController* PlayerController : ConnectedControllers)
 		{
-			FPlayerInfo NewPlayerInfo;
-			NewPlayerInfo.DisplayName = PlayerController->PlayerState ? PlayerController->PlayerState->GetPlayerName() : "Unknown";
-			NewPlayerInfo.ScoreText = PlayerController->PlayerState ? FString::Printf(TEXT("%d"), Cast<ASPlayerState>(PlayerController->PlayerState)->GetPlayerScore()) : FString(TEXT("N/A"));
-			NewPlayerInfo.KillsText = FString::Printf(TEXT("0"));
-			PlayerInfoArray.Add(NewPlayerInfo);
+			PlayerController->ClientUpdateScoreboard(PlayerInfoArray);
 		}
-
-		FTimerHandle UpateScoreboardTimerHandle;
-
-		//Update scoreboard after 1 second (this allows update for clients, god knows why)
-		GetWorldTimerManager().SetTimer(UpateScoreboardTimerHandle, [this]() {
-			for (ASPlayerController* PlayerController : ConnectedControllers)
-			{
-				PlayerController->ClientUpdateScoreboard(PlayerInfoArray);
-			}
-			}, 1.f, false);
-
-
-	}
+		}, 1.f, false);
 }
 
 void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerController* VictimController, ASPlayerController* AttackerController, AActor* DamageCauser)
@@ -50,6 +53,7 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState)
 	{
 		AttackerPlayerState->AddToScore(100.f);
+		AttackerPlayerState->AddToKills();
 
 		FString VictimSteamName = VictimController->PlayerState ? VictimController->PlayerState->GetPlayerName() : FString();
 		FString AttackerSteamName = AttackerController->PlayerState ? AttackerController->PlayerState->GetPlayerName() : FString();
@@ -75,6 +79,7 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 	{
 		ElimmedCharacter->Elim();
 	}
+	UpdateScoreboards();
 }
 
 void ASGameMode::ZombieEliminated(ASZombie* ElimmedCharacter, ASZombieAIController* VictimController, ASPlayerController* AttackerController)

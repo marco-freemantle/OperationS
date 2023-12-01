@@ -39,4 +39,7 @@ protected:
 	void PostLogin(APlayerController* NewPlayer) override;
 	TArray<class ASPlayerController*> ConnectedControllers;
 	TArray<FPlayerInfo> PlayerInfoArray;
+
+private:
+	void UpdateScoreboards();
 };
