@@ -32,6 +32,8 @@ public:
 
 	void SetHUDMatchCountDown(float CountDownTime);
 
+	void SetHUDGrenadeTimer(float TimeRemaining);
+
 	UFUNCTION(Client, Reliable)
 	void ClientUpdateScoreboard(const TArray<FPlayerInfo>& PlayerInfoArray);
 

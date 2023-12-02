@@ -109,6 +109,11 @@ public:
 	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
 	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
 
+	float LastGrenadeThrowTime;
+	float GrenadeCooldown = 0.f; //Initially 0 so player can throw immediately
+	UPROPERTY(BlueprintReadOnly)
+	float RemainingGrenadeCooldown = 0.f;
+
 	UFUNCTION(BlueprintCallable)
 	void ThrowGrenadeFinished();
 

@@ -28,6 +28,9 @@ public:
 	UProgressBar* ShieldBar;
 
 	UPROPERTY(meta = (BindWidget))
+	UProgressBar* GrenadeCoolDownBar;
+
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ShieldText;
 
 	UPROPERTY(meta = (BindWidget))

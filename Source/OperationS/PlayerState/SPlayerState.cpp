@@ -29,6 +29,19 @@ void ASPlayerState::AddToScore(float ScoreAmount)
 	}
 }
 
+void ASPlayerState::OnRep_PlayerScore()
+{
+	Character = Character == nullptr ? Cast<ASCharacter>(GetPawn()) : Character;
+	if (Character)
+	{
+		Controller = Controller == nullptr ? Cast<ASPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDScore(PlayerScore);
+		}
+	}
+}
+
 void ASPlayerState::AddToKills()
 {
 	PlayerKills = PlayerKills + 1;

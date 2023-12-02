@@ -22,6 +22,21 @@ void ASGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 }
 
+void ASGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	ASPlayerController* ExitingController = Cast<ASPlayerController>(Exiting);
+	if (ExitingController)
+	{
+		if (ConnectedControllers.Contains(ExitingController))
+		{
+			ConnectedControllers.Remove(ExitingController);
+		}
+		UpdateScoreboards();
+	}
+}
+
 void ASGameMode::UpdateScoreboards()
 {
 	PlayerInfoArray.Empty();

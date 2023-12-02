@@ -37,7 +37,12 @@ public:
 
 protected:
 	void PostLogin(APlayerController* NewPlayer) override;
+	void Logout(AController* Exiting) override;
+
+	UPROPERTY(BlueprintReadWrite)
 	TArray<class ASPlayerController*> ConnectedControllers;
+
+	UPROPERTY(BlueprintReadWrite)
 	TArray<FPlayerInfo> PlayerInfoArray;
 
 private:

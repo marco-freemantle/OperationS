@@ -120,6 +120,20 @@ void ASPlayerController::SetHUDMatchCountDown(float CountDownTime)
 	}
 }
 
+void ASPlayerController::SetHUDGrenadeTimer(float TimeRemaining)
+{
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterOverlay && SHUD->CharacterOverlay->GrenadeCoolDownBar)
+	{
+		//Calculate the percentage based on the time remaining
+		float CooldownPercentage = FMath::Clamp(1.0f - (TimeRemaining / 10.f), 0.0f, 1.0f);
+
+		//Set the percentage of the cooldown bar
+		SHUD->CharacterOverlay->GrenadeCoolDownBar->SetPercent(CooldownPercentage);
+	}
+}
+
 void ASPlayerController::ClientSetHUDKillFeeds_Implementation(const FString& VictimName, const FString& AttackerName, UTexture2D* WeaponImage)
 {
 	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;

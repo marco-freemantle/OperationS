@@ -70,6 +70,14 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 		SetHUDCrosshairs(DeltaTime);
 		InterpFOV(DeltaTime);
+
+		float CurrentTime = GetWorld()->GetTimeSeconds();
+		RemainingGrenadeCooldown = GrenadeCooldown - (CurrentTime - LastGrenadeThrowTime);
+		Controller = Controller == nullptr ? Cast<ASPlayerController>(Character->Controller) : Controller;
+		if (Controller)
+		{
+			Controller->SetHUDGrenadeTimer(RemainingGrenadeCooldown);
+		}
 	}
 }
 
@@ -409,7 +417,12 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 void UCombatComponent::ThrowGrenade()
 {
 	if (CombatState != ECombatState::ECS_Unoccupied || EquippedWeapon == nullptr) return;
+
+	float CurrentTime = GetWorld()->GetTimeSeconds();
+	if (CurrentTime - LastGrenadeThrowTime < GrenadeCooldown) return;
+
 	CombatState = ECombatState::ECS_ThrowingGrenade;
+	
 	if (Character)
 	{
 		Character->PlayThrowGrenadeMontage();
@@ -420,6 +433,8 @@ void UCombatComponent::ThrowGrenade()
 	{
 		ServerThrowGrenade();
 	}
+	if (GrenadeCooldown == 0.f) GrenadeCooldown = 10.f;
+	LastGrenadeThrowTime = CurrentTime;
 }
 
 void UCombatComponent::ServerThrowGrenade_Implementation()
@@ -431,6 +446,7 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 		AttachActorToLeftHand(EquippedWeapon);
 		ShowAttachedGrenade(true);
 	}
+	LastGrenadeThrowTime = GetWorld()->GetTimeSeconds();
 }
 
 void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
