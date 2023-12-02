@@ -17,4 +17,7 @@ class OPERATIONS_API UCharacterScoreboard : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget))
 	class UVerticalBox* ScoreList;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* WinningPlayerText;
 };

@@ -47,4 +47,5 @@ protected:
 
 private:
 	void UpdateScoreboards();
+	void FinishGame(FString AttackerName);
 };

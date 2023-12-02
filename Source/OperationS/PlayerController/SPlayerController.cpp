@@ -327,7 +327,7 @@ void ASPlayerController::ToggleScoreboard()
 {
 	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
 
-	if (SHUD && SHUD->CharacterScoreboard)
+	if (SHUD && SHUD->CharacterScoreboard && bCanToggleScoreboard)
 	{
 		bIsScoreboardOpen = !bIsScoreboardOpen;
 
@@ -339,6 +339,20 @@ void ASPlayerController::ToggleScoreboard()
 		{
 			SHUD->CharacterScoreboard->SetVisibility(ESlateVisibility::Hidden);
 		}
+	}
+}
+
+void ASPlayerController::ClientSetHUDFinishGame_Implementation(const FString& AttackerName)
+{
+	bCanToggleScoreboard = false;
+
+	SHUD = SHUD == nullptr ? Cast<ASHUD>(GetHUD()) : SHUD;
+
+	if (SHUD && SHUD->CharacterScoreboard && SHUD->CharacterScoreboard->WinningPlayerText)
+	{
+		FString TextToDisplay = AttackerName + TEXT(" Wins!!!");
+		SHUD->CharacterScoreboard->WinningPlayerText->SetText(FText::FromString(TextToDisplay));
+		SHUD->CharacterScoreboard->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 

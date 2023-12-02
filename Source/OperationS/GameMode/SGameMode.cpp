@@ -94,6 +94,13 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 	{
 		ElimmedCharacter->Elim();
 	}
+
+	if (AttackerPlayerState->GetPlayerkills() >= 1)
+	{
+		FString AttackerSteamName = AttackerController->PlayerState ? AttackerController->PlayerState->GetPlayerName() : FString();
+		FinishGame(AttackerSteamName);
+	}
+
 	UpdateScoreboards();
 }
 
@@ -122,4 +129,22 @@ void ASGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController* Elimm
 		int32 Selection = FMath::RandRange(0, PlayerStarts.Num() - 1);
 		RestartPlayerAtPlayerStart(ElimmedController, PlayerStarts[Selection]);
 	}
+}
+
+void ASGameMode::FinishGame(FString AttackerName)
+{
+	for (ASPlayerController* PlayerController : ConnectedControllers)
+	{
+		PlayerController->ClientSetHUDFinishGame(AttackerName);
+	}
+
+	//Back to lobby after 7 seconds
+	FTimerHandle BackToLobbyTimerHandle;
+	GetWorldTimerManager().SetTimer(BackToLobbyTimerHandle, [this]() {
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel("/Game/OnlineMenuSubsystem/LobbyMap");
+		}
+	}, 7.f, false);
 }

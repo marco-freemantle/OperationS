@@ -35,12 +35,16 @@ public:
 	void SetHUDGrenadeTimer(float TimeRemaining);
 
 	UFUNCTION(Client, Reliable)
+	void ClientSetHUDFinishGame(const FString& AttackerName);
+
+	UFUNCTION(Client, Reliable)
 	void ClientUpdateScoreboard(const TArray<FPlayerInfo>& PlayerInfoArray);
 
 	void ToggleScoreboard();
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UUserWidget> ScoreboardItemClass;
 	bool bIsScoreboardOpen = false;
+	bool bCanToggleScoreboard = true;
 
 	UFUNCTION(Client, Reliable)
 	void ClientSetHUDKillFeeds(const FString& VictimName, const FString& AttackerName, UTexture2D* WeaponImage);
