@@ -95,7 +95,7 @@ void ASGameMode::PlayerEliminated(ASCharacter* ElimmedCharacter, ASPlayerControl
 		ElimmedCharacter->Elim();
 	}
 
-	if (AttackerPlayerState->GetPlayerkills() >= 1)
+	if (AttackerPlayerState->GetPlayerkills() >= 30)
 	{
 		FString AttackerSteamName = AttackerController->PlayerState ? AttackerController->PlayerState->GetPlayerName() : FString();
 		FinishGame(AttackerSteamName);

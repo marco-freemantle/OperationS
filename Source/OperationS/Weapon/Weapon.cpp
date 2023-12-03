@@ -42,7 +42,6 @@ AWeapon::AWeapon()
 
 	Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
 	Flashlight->SetupAttachment(RootComponent);
-	Flashlight->SetLightBrightness(100000.f);
 	Flashlight->SetAttenuationRadius(16500.f);
 	Flashlight->InnerConeAngle = 15.f;
 	Flashlight->OuterConeAngle = 25.f;
