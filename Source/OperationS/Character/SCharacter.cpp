@@ -21,6 +21,7 @@
 #include "Operations/Misc/Purchasable.h"
 #include "Operations/SComponents/BuffComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "OperationS/Misc/SGameUserSettings.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -311,12 +312,20 @@ void ASCharacter::MoveRight(float Value)
 
 void ASCharacter::Turn(float Value)
 {
-	AddControllerYawInput(Value);
+	USGameUserSettings* UserSettings = Cast<USGameUserSettings>(UGameUserSettings::GetGameUserSettings());
+	if (UserSettings && UserSettings->GetMouseSensitivity())
+	{
+		AddControllerYawInput(Value * UserSettings->GetMouseSensitivity() * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void ASCharacter::LookUp(float Value)
 {
-	AddControllerPitchInput(Value);
+	USGameUserSettings* UserSettings = Cast<USGameUserSettings>(UGameUserSettings::GetGameUserSettings());
+	if (UserSettings && UserSettings->GetMouseSensitivity())
+	{
+		AddControllerPitchInput(Value * UserSettings->GetMouseSensitivity() * GetWorld()->GetDeltaSeconds());
+	}
 }
 
 void ASCharacter::EquipButtonPressed()
